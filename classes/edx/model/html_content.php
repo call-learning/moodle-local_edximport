@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,18 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin to import edX archive and convert it into a course
+ * edX Model for chapter
  *
  * @package    local_edximport
  * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edximport\local;
+namespace local_edximport\edx\model;
 
-class processor_utils {
-    public static function convert_edx_date_to_ts($date) {
-        $date = str_replace('&quot;','', $date);
-        return strtotime($date);
-    }
+defined('MOODLE_INTERNAL') || die();
+
+interface html_content {
+    public function get_content();
 }

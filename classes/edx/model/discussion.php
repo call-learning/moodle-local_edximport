@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,14 +26,15 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class discussion {
-    public $category = "";
-    public $displayname = "";
-    public $target = "";
+class discussion extends base {
+    /**
+     * @var string[] $attributeslist
+     */
+    protected static $attributeslist = ['category','displayname', 'target'];
 
     public function __construct($category, $displayname, $target) {
-        $this->category = $category;
-        $this->displayname = $displayname;
-        $this->target = $target;
+        parent::__construct(
+            compact(self::$attributeslist)
+        );
     }
 }

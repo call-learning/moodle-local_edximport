@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,23 +26,25 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class sequential {
-    public $urlname = "";
-
-    public $displayname = "";
+class sequential extends base {
+    /**
+     * @var string[] $attributeslist
+     */
+    protected static $attributeslist = ['entityid','displayname'];
 
     public $verticals = [];
 
     /**
-     * Sequential constructor.
+     * Course constructor.
      *
-     * @param $urlname
-     * @param $title
+     * @throws \moodle_exception
      */
-    public function __construct($urlname, $displayname) {
-        $this->urlname = $urlname;
-        $this->displayname = $displayname;
+    public function __construct($entityid, $displayname) {
+        parent::__construct(
+            compact(self::$attributeslist)
+        );
     }
+
 
     /**
      * Add a new vertical
@@ -52,5 +53,6 @@ class sequential {
      */
     public function add_vertical(vertical $vertical) {
         $this->verticals[] = $vertical;
+        $this->set_parent($vertical);
     }
 }

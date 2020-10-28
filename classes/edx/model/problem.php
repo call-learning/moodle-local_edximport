@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,17 +26,70 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class problem {
-    public $urlname = "";
+class problem extends base {
+    public $instructions = [];
 
-    public $title = "";
+    public $questions = [];
+    public $solutions = [];
 
-    public $intro = "";
-    public function __construct($displayname, $maxattempts=1, $showanswers='correct_or_past_due') {
-        $this->displayname = $displayname;
+    const QUESTION_CLASS = '\\local_edximport\\edx\model\\question\\';
+
+    /**
+     * @var string[] $attributeslist
+     */
+    protected static $attributeslist = ['entityid', 'displayname', 'maxattempts', 'showanswers', 'weight', 'rerandomize'];
+
+    public function __construct($entityid, $displayname, $maxattempts, $showanswers, $weight, $rerandomize) {
+        // https://edx.readthedocs.io/projects/edx-open-learning-xml/en/latest/components/problem-components.html
+        parent::__construct(
+            compact(self::$attributeslist)
+        );
     }
 
-    public function set_intro($intro) {
-        $this->intro = $intro;
+    public static function question_from_dom_node(\DOMNode $node) {
+        $questionclass = self::QUESTION_CLASS . $node->nodeName;
+        $question = new $questionclass();
+        switch ($node->nodeName) {
+            case 'multiplechoiceresponse':
+                $choicegroup = $node->firstChild;
+                $question->label = $choicegroup->attributes->getNamedItem('label')->textContent;
+                $question->type = $choicegroup->attributes->getNamedItem('type') ?
+                    $choicegroup->attributes->getNamedItem('type')->textContent : '';
+                self::convert_choices($question, $choicegroup);
+                break;
+            case 'choiceresponse':
+                $checkboxgroup = $node->firstChild;
+                $checkboxgroupdirection = $checkboxgroup->attributes->getNamedItem('direction') ?
+                    $checkboxgroup->attributes->getNamedItem('direction')->textContent : 'vertical';
+                $question->set_direction($checkboxgroupdirection);
+                self::convert_choices($question, $checkboxgroup);
+                break;
+        }
+        return $question;
+    }
+
+    protected static function convert_choices(&$question, $rootnode) {
+        foreach ($rootnode->childNodes as $choicenode) {
+            $correct = (bool) $choicenode->attributes->getNamedItem('correct')->textContent;
+            $label = $choicenode->textContent;
+            $question->add_choice($correct, $label);
+        }
+    }
+
+    public function add_instruction($instruction) {
+        $this->instructions[] = $instruction;
+    }
+
+    public function add_question(question\base $question) {
+        $this->questions[] = $question;
+        $this->set_parent($question);
+    }
+
+    public function add_solution($htmlsolution) {
+        $this->solutions[] = $htmlsolution;
+    }
+
+    public static function is_known_question($questiontype) {
+        return class_exists(self::QUESTION_CLASS . $questiontype);
     }
 }

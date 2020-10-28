@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,9 +24,115 @@
 
 namespace local_edximport\edx\model;
 
+use local_edximport\converter\course_visitor;
+use local_edximport\converter\model_visitor;
+
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class base
+ *
+ * A dataobject type of class
+ *
+ * @package local_edximport\edx\model
+ */
 class base {
-    public $urlname = "";
+    protected static $attributeslist = [];
+    protected $modelid = -1;
+    protected $keyedargs = [];
+
+    public $index = 0; // Index in the parent's list.
+    public $parent = null; // Parent model.
+
+    /**
+     * base constructor.
+     *
+     * @param $keyedargs
+     * @throws \moodle_exception
+     */
+    public function __construct($keyedargs) {
+        if (!$this->check_attributes($keyedargs)) {
+            throw new \moodle_exception('cannotbuildedxmodel', 'local_edximport',
+                (object) ['model' => self::class, 'args' => var_export($keyedargs)]
+            );
+        }
+        $this->keyedargs = $keyedargs;
+        $this->modelid = self::get_unique_id();
+    }
+
+    /**
+     * Checked attributes
+     *
+     * @param $keyedargs
+     * @return false
+     */
+    protected function check_attributes($keyedargs) {
+        foreach ($keyedargs as $key => $args) {
+            if (!in_array($key, static::$attributeslist)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Get related attributes
+     *
+     * @param $keyname
+     * @return mixed|null
+     */
+    public function __get($keyname) {
+        if ($keyname == 'id') {
+            return $this->modelid;
+        }
+        if (!empty($this->keyedargs[$keyname])) {
+            return $this->keyedargs[$keyname];
+        }
+        return null;
+    }
+
+    /**
+     * Set attributes
+     *
+     * @param $keyname
+     * @param $value
+     */
+    public function __set($keyname, $value) {
+        if (!empty($this->keyedargs[$keyname])) {
+            $this->keyedargs[$keyname] = $value;
+        }
+    }
+
+    /**
+     * Retrieve all static url ("/static/..", or '/static/...')
+     * From itself and subcomponents
+     */
+    public function collect_statics() {
+        return [];
+    }
+
+    const START_ID = 50;
+
+    /**
+     * @return int|mixed
+     */
+    protected static function get_unique_id() {
+        static $idlist = [self::START_ID];
+        $max = max($idlist) + 1;
+        $idlist[] = $max;
+        return $max;
+    }
+
+    /**
+     * Visitor
+     */
+    public function accept(model_visitor $visitor) {
+        $classshortname = (new \ReflectionClass($this))->getShortName();
+        return $visitor->{'visit_' . $classshortname}($this);
+    }
+
+    protected function set_parent(&$model) {
+        $model->parent = $this;
+    }
 
 }

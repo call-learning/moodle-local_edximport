@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,27 +26,57 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class course {
-    public $image = "";
-    public $fullname = "";
-    public $startdate = 0;
-    public $enddate = 0;
+class course extends base {
 
-    public $chapters = [];
+    protected static $attributeslist = ['image', 'startdate', 'enddate', 'fullname'];
 
     public $wiki = null;
+    public $chapters = [];
+    public $assets = null;
 
-    public function __construct($fullname, $startdate, $enddate, $image) {
-        $this->image = $image;
-        $this->startdate = $startdate;
-        $this->enddate = $enddate;
-        $this->fullname = $fullname;
+    /**
+     * Course constructor.
+     *
+     * @param $image
+     * @param $startdate
+     * @param $enddate
+     * @param $fullname
+     * @throws \moodle_exception
+     */
+    public function __construct($image, $startdate, $enddate, $fullname) {
+        parent::__construct(
+            compact(self::$attributeslist)
+        );
     }
 
     public function add_chapter(chapter $chapter) {
         $this->chapters[] = $chapter;
+        $this->set_parent($chapter);
     }
+
+    public function add_assets($assetdefs) {
+        $this->assets = $assetdefs;
+    }
+
     public function set_wiki(wiki $wiki) {
         $this->wiki = $wiki;
     }
+
+    /**
+     * ID is always course::COURSE_ID for course
+     *
+     * @param $keyname
+     * @return mixed|null
+     */
+    public function __get($keyname) {
+        if ($keyname == 'id') {
+            return self::COURSE_ID;
+        }
+        return parent::__get($keyname);
+    }
+
+    /**
+     * Course ID
+     */
+    const COURSE_ID = 2;
 }

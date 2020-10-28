@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,20 +26,28 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class chapter {
-    public $urlname = "";
+class chapter extends base {
+    /**
+     * @var string[] $attributeslist
+     */
+    protected static $attributeslist = ['entityid','displayname', 'startdate'];
 
-    public $displayname = "";
-    public $startdate = "";
     public $sequentials = [];
 
-    public function __construct($urlname, $displayname, $timestamp) {
-        $this->urlname = $urlname;
-        $this->displayname = $displayname;
-        $this->startdate = $timestamp;
+    /**
+     * Course constructor.
+     *
+     * @throws \moodle_exception
+     */
+    public function __construct($entityid, $displayname, $startdate) {
+        parent::__construct(
+            compact(self::$attributeslist)
+        );
     }
+
 
     public function add_sequential(sequential $sequential) {
         $this->sequentials[] = $sequential;
+        $this->set_parent($sequential);
     }
 }

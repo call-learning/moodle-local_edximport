@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,13 +26,19 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class video {
-    public $videoid = "";
-
-    public $displayname = "";
+class video extends base implements html_content, static_content {
+    /**
+     * @var string[] $attributeslist
+     */
+    protected static $attributeslist = ['videoid', 'displayname'];
 
     public function __construct($videoid, $displayname) {
-        $this->videoid = $videoid;
-        $this->displayname = $displayname;
+        parent::__construct(
+            compact(self::$attributeslist)
+        );
+    }
+
+    public function get_content() {
+        return '<video></video>'; // TODO: return real HTML.
     }
 }

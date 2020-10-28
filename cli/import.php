@@ -59,7 +59,8 @@ if ($options['help']) {
 
 $path = '/home/laurentd/development/minesdouai/course-full';
 //empty($option['path']) || !is_file($option['path'])
-$courseid = \local_edximport\edx_importer::import($path);
+$coursemodel = \local_edximport\edx_importer::import($path);
+\local_edximport\edx_to_moodle_exporter::export('/tmp/moodle', $coursemodel, $path);
 //if(empty($option['path']) || !is_file($option['path'])) {
 //    $courseid = \local_edximport\edx_importer::import($option['path']);
 //} else {

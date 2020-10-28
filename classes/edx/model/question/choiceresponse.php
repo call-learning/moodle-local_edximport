@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,32 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin to import edX archive and convert it into a course
+ * edX Model for Mutiple choice question
  *
  * @package    local_edximport
  * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edximport\processors;
+namespace local_edximport\edx\model\question;
 
-defined('MOODLE_INTERNAL') || die();
-global $CFG;
+class choiceresponse extends choicetype {
+    protected static $attributeslist = ['vertical'];
+    protected $direction = 'vertical';
 
-
-class attributes  {
-
-    protected $originalarray = [];
-    public function __construct($originalarray) {
-        $this->originalarray = $originalarray;
+    public function set_direction($direction) {
+        $this->direction = $direction;
     }
-
-    public function __get($property)
-    {
-        if (!empty($this->originalarray[$property])) {
-            return $this->originalarray[$property];
-        }
-        return null;
-    }
-
 }

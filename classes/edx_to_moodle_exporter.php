@@ -23,24 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edximport\processors;
-
-use local_edximport\edx\model\discussion;
-use local_edximport\edx\model\html;
-
+namespace local_edximport;
 defined('MOODLE_INTERNAL') || die();
-global $CFG;
-global $CFG;
 
-require_once($CFG->dirroot . '/backup/util/xml/parser/progressive_parser.class.php');
-require_once($CFG->dirroot . '/backup/util/xml/parser/processors/progressive_parser_processor.class.php');
+use local_edximport\converter\course as course_converter;
+use local_edximport\converter\edx_moodle_model;
+use local_edximport\converter\output\course;
+use local_edximport\edx\model\course as course_model;
+use local_edximport\parser\simple_parser;
+use local_edximport\processors\course_processor;
+use progressive_parser;
 
-class discussion_processor extends base_processor {
-    public function process_element($elementname, $attrs, $cdata = null) {
-        switch ($elementname) {
-            case 'discussion':
-                $this->entity = new discussion($attrs->discussion_category,  $attrs->display_name, $attrs->discussion_targe);
-                break;
-        }
+class edx_to_moodle_exporter {
+    public static function export($destinationpath, course_model $course, $edxarchpath) {
+        $edxtomoodle = new edx_moodle_model($course, $edxarchpath);
+        $converter = new course($destinationpath, $edxtomoodle);
+        $converter->create_backup();
     }
 }

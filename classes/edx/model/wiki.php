@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,9 +26,15 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class wiki {
-    public $slug = "";
+class wiki extends  base {
+    protected static $attributeslist = ['slug'];
+
+    /**
+     * wiki constructor.
+     *
+     * @param $slug
+     */
     public function __construct($slug) {
-        $this->slug = $slug;
+        parent::__construct(compact(self::$attributeslist));
     }
 }

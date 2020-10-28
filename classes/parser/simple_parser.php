@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,85 +23,118 @@
  */
 
 namespace local_edximport\parser;
-use progressive_parser;
+
+use local_edximport\edx\model\base;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
-require_once($CFG->dirroot . '/backup/util/xml/parser/progressive_parser.class.php');
+abstract class simple_parser {
 
+    /**
+     * @var string $archivepath
+     */
+    protected $archivepath = null;
 
-class simple_parser extends progressive_parser {
+    /**
+     * Entity currently processed
+     *
+     * @var base $entity
+     */
+    protected $entity = null;
 
-    protected function start_tag($parser, $tag, $attributes) {
+    /**
+     * Entity name
+     *
+     * @var string $entityid
+     */
+    protected $entityid = null;
 
-        // Normal update of parser internals.
-        $this->level++;
-        $this->path .= '/' . $tag;
-        $this->accum = '';
-        $this->attrs = !empty($attributes) ? $attributes : array();
+    /**
+     * Related entities found during main parsing
+     *
+     * @var array $relatedentities
+     */
+    protected $relatedentities = [];
 
-        // Inform processor we are about to start one tag.
-        $this->inform_start($this->path);
-
-        // Entering a new inner level, publish all the information available.
-        if ($this->level > $this->prevlevel) {
-            if (!empty($this->currtag) && (!empty($this->currtag['attrs']) || !empty($this->currtag['cdata']))) {
-                // We add all tags as children.
-            }
-            if (!empty($this->topush['tags'])) {
-                $this->publish($this->topush);
-            }
-            $this->currtag = array();
-            $this->topush = array();
-        }
-
-        // If not set, build to push common header.
-        if (empty($this->topush)) {
-            $this->topush['path']  = progressive_parser::dirname($this->path);
-            $this->topush['level'] = $this->level;
-            $this->topush['tags']  = array();
-        }
-
-        // Handling a new tag, create it.
-        $this->currtag['name'] = $tag;
-        // And add attributes if present.
-        if ($this->attrs) {
-            $this->currtag['attrs'] = $this->attrs;
-        }
-
-        // For the records.
-        $this->prevlevel = $this->level;
+    /**
+     * Build from archive path
+     *
+     * @param $archivepath
+     */
+    public function __construct($archivepath, $entityid = null) {
+        $this->archivepath = $archivepath;
+        $this->entityid = $entityid;
     }
 
-    protected function end_tag($parser, $tag) {
+    /**
+     * Get original file name
+     *
+     * @return mixed
+     */
+    protected abstract function get_file_path();
 
-        // Ending rencently started tag, add value to current tag.
-        if ($this->level == $this->prevlevel) {
-            $this->currtag['cdata'] = $this->postprocess_cdata($this->accum);
-            // We always add the last not-empty repetition. Empty ones are ignored.
-            $this->topush['tags'][] = $this->currtag;
-            $this->currtag = array();
+    /**
+     * Process a given element.
+     *
+     * This method can also have side effects on the xmlreader (move to next node for example)
+     *
+     * @param \XMLReader $xmlreader
+     */
+    protected abstract function process_element(&$xmlreader);
+
+    /**
+     * Parse the original model
+     */
+    public function parse() {
+        $xmlreader = new \XMLReader();
+        $xmlreader->open($this->archivepath . '/' . $this->get_file_path(),
+            LIBXML_NOBLANKS);
+        $continue = true;
+        while ($continue && $xmlreader->read()) {
+            $continue = $this->process_element($xmlreader); // We can also call ::next in this function.
         }
+        $xmlreader->close();
+        // This post loop avoids having several XML Reader opened at the same time.
+        $this->add_related_entities();
+    }
 
-        // Leaving one level, publish all the information available.
-        if ($this->level <= $this->prevlevel) {
-            if (!empty($this->topush['tags'])) {
-                $this->publish($this->topush);
-            }
-            $this->currtag = array();
-            $this->topush = array();
+    /**
+     * Parse other related entities in a loop
+     */
+    protected function add_related_entities() {
+        foreach ($this->relatedentities as $index => $relatedentity) {
+            $addfunction = 'add_' . $relatedentity->type;
+            $this->entity->index = $index; // Make sure we set the index first.
+            $this->entity->$addfunction(self::simple_process_entity(
+                $this->archivepath,
+                $relatedentity->type,
+                $relatedentity->url
+            ));
         }
+    }
 
-        // For the records.
-        $this->prevlevel = $this->level;
+    /**
+     * Get processed entity
+     *
+     * @return |null
+     */
+    public function get_entity() {
+        return $this->entity;
+    }
 
-        // Inform processor we have finished one tag.
-        $this->inform_end($this->path);
-
-        // Normal update of parser internals.
-        $this->level--;
-        $this->path = progressive_parser::dirname($this->path);
+    /**
+     * Simple method to parse sub entities
+     *
+     * @param $entityname
+     * @param $url
+     * @return mixed
+     */
+    public static function simple_process_entity($archivepath, $entitytype, $entityid = null) {
+        $parserclass = '\\local_edximport\\parser\\' . $entitytype;
+        $pp = new $parserclass($archivepath, $entityid);
+        $pp->parse();
+        return $pp->get_entity();
     }
 
 }
