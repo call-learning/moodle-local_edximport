@@ -43,7 +43,7 @@ class course extends base {
      * @param $fullname
      * @throws \moodle_exception
      */
-    public function __construct($image, $startdate, $enddate, $fullname) {
+    public function __construct($fullname, $startdate, $enddate, $image) {
         parent::__construct(
             compact(self::$attributeslist)
         );

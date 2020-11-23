@@ -24,8 +24,8 @@
 
 namespace local_edximport\edx\model\question;
 
-class choiceresponse extends choicetype {
-    protected static $attributeslist = ['vertical'];
+class choiceresponse extends base_choice {
+    protected static $attributeslist = ['label', 'vertical'];
     protected $direction = 'vertical';
 
     public function set_direction($direction) {

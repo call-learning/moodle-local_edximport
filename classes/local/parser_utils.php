@@ -67,17 +67,46 @@ class parser_utils {
     }
 
     /**
+     * Get all reference to an iframe in the static folder
+     *
+     * @param $htmlcontent
+     * @return array|boolean
+     */
+    public static function html_get_iframe_src_ref($htmlcontent) {
+        $iframessrc = preg_match_all('/iframe\s+src=["\']\/static\/([^"]+)["\']/', $htmlcontent, $matches,
+            PREG_SET_ORDER);
+        if ($iframessrc) {
+            return $matches;
+        }
+        return false;
+    }
+
+    /**
+     * Get all reference to a local src file
+     *
+     * @param $htmlcontent
+     * @return array|boolean
+     */
+    public static function html_get_src_ref($htmlcontent) {
+        $srcset = preg_match_all('/src=["\']([^"\']+)["\']|href=["\']([^"\']+)["\']/', $htmlcontent, $matches,
+            PREG_SET_ORDER);
+        if ($srcset) {
+            return $matches;
+        }
+        return false;
+    }
+    /**
      * Change all references in a text
      *
      * @param $staticrefs
      */
-    public static function change_html_static_ref($htmlcontent, \local_edximport\edx\model\base $model) {
+    public static function change_html_static_ref($htmlcontent) {
         $replacer = function($matches) {
             $filepath =  $matches[1];
             $parts   = explode('/', $filepath);
             $encoded = implode('/', array_map('rawurlencode', $parts));
-            return '@@PLUGINFILE@@'.$encoded;
+            return '@@PLUGINFILE@@/'.$encoded;
         };
-        return preg_replace_callback('/"/static/([^"]+)"|\'/static/([^"]+)\'', $replacer, static::$htmlcontent);
+        return preg_replace_callback('/"\/static\/([^"]+)"|\'\/static\/([^\']+)\'/', $replacer, $htmlcontent);
     }
 }

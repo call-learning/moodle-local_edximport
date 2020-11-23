@@ -24,9 +24,18 @@
 
 namespace local_edximport\edx\model\question;
 
-class choicetype extends base {
-    public $choices = [];
-    public function add_choice($correct, $label) {
-        $this->choices[] = (object) compact('correct', 'label');
+use local_edximport\edx\model\html_content;
+
+class solution extends \local_edximport\edx\model\base implements html_content {
+    protected static $attributeslist = ['label'];
+
+    public function __construct() {
+        parent::__construct(
+            compact(self::$attributeslist)
+        );
+    }
+
+    public function get_content() {
+        return $this->label;
     }
 }

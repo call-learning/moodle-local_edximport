@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gradebook>
+    <attributes>
+    </attributes>
+    <grade_categories>
+        {{#gradecategories}}
+            <grade_category id="{{id}}">
+                <parent>{{parent}}</parent>
+                <depth>{{depth}}</depth>
+                <path>{{path}}</path>
+                <fullname>{{fullname}}</fullname>
+                <aggregation>{{aggregation}}</aggregation>
+                <keephigh>0</keephigh>
+                <droplow>0</droplow>
+                <aggregateonlygraded>1</aggregateonlygraded>
+                <aggregateoutcomes>0</aggregateoutcomes>
+                <timecreated>{{timecreated}}</timecreated>
+                <timemodified>{{timemodified}}</timemodified>
+                <hidden>0</hidden>
+            </grade_category>
+        {{/gradecategories}}
+    </grade_categories>
+    <grade_items>
+        {{#gradeitems}}
+            {{> grade_item }}
+        {{/gradeitems}}
+    </grade_items>
+    <grade_letters>
+    </grade_letters>
+    <grade_settings>
+        <grade_setting id="">
+            <name>minmaxtouse</name>
+            <value>1</value>
+        </grade_setting>
+    </grade_settings>
+</gradebook>

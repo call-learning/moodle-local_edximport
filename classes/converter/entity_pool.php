@@ -40,11 +40,6 @@ class entity_pool {
     public $entities = array();
 
     /**
-     * @var int
-     */
-    protected $cur = 0;
-
-    /**
      * Setup a new entity.
      * @throws moodle_exception
      */
@@ -61,7 +56,7 @@ class entity_pool {
         if (count($this->entities[$entitytype]) > 0) {
             $maxid = max(array_keys($this->entities[$entitytype])) + 1;
         } else {
-            $maxid = 0;
+            $maxid = 1; // 0 has sometimes a special meaning.
         }
         $this->entities[$entitytype][$maxid] = null;
         return $maxid;
@@ -72,7 +67,7 @@ class entity_pool {
      *
      * @param string $item the name of referenced item (like user, file, scale, outcome or grade_item)
      * @param int $id the value of the reference
-     * @param $data to refer to. Can be a structure or a filepath or something else.
+     * @param mixed $data refer to. Can be a structure or a filepath or something else.
      * @return int|mixed|string
      * @throws moodle_exception
      */
@@ -92,20 +87,30 @@ class entity_pool {
         if (!empty($this->entities[$itemtype][$id])) {
             return $this->entities[$itemtype][$id];
         }
+        return null;
     }
 
     /**
-     * Get entities for type
+     * Get an entity data.
      *
      * @param $itemtype
      * @param int $id
-     * @return mixed
+     * @return array
      * @throws moodle_exception
      */
-    public function get_entities_for_type($itemtype) {
+    public function get_entities($itemtype) {
         if (!empty($this->entities[$itemtype])) {
             return $this->entities[$itemtype];
         }
+        return null;
+    }
+
+    public static final function get_instance() {
+        static $entitypool = null;
+        if (!$entitypool) {
+            $entitypool = new entity_pool(); // Store entities information.
+        }
+        return $entitypool;
     }
 
 

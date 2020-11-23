@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<activity id="{{id}}" moduleid="{{moduleid}}" modulename="{{modulename}}" contextid="{{contextid}}">
+    <book  id="{{id}}">
+        <name>{{name}}</name>
+        <intro></intro>
+        <introformat>1</introformat>
+        <numbering>1</numbering>
+        <navstyle>1</navstyle>
+        <customtitles>0</customtitles>
+        <timecreated>{{timecreated}}</timecreated>
+        <timemodified>{{timemodified}}</timemodified>
+        <chapters>
+            {{#chapters}}
+            <chapter id="{{id}}">
+                <pagenum>{{pagenum}}</pagenum>
+                <subchapter>0</subchapter>
+                <title>{{title}}</title>
+                <content>{{{content}}}</content>
+                <contentformat>1</contentformat>
+                <hidden>0</hidden>
+                <timemodified>{{timemodified}}</timemodified>
+                <importsrc></importsrc>
+            </chapter>
+            {{/chapters}}
+        </chapters>
+        <chaptertags>
+        </chaptertags>
+    </book>
+</activity>

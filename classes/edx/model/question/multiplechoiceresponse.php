@@ -24,6 +24,6 @@
 
 namespace local_edximport\edx\model\question;
 
-class multiplechoiceresponse extends choicetype {
+class multiplechoiceresponse extends base_choice {
     protected static $attributeslist = ['label', 'type'];
 }

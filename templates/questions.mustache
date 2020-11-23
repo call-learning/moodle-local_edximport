@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<question_categories>
+    {{#questioncategories}}
+    <question_category id="{{id}}">
+        <name>{{name}}</name>
+        <contextid>{{contextid}}</contextid>
+        <contextlevel>{{contextlevel}}</contextlevel>
+        <contextinstanceid>{{contextinstanceid}}</contextinstanceid>
+        <info>{{info}}</info>
+        <infoformat>1</infoformat>
+        <stamp>{{stamp}}</stamp>
+        <parent>{{parentid}}</parent>
+        <sortorder>{{sortorder}}</sortorder>
+        <idnumber>{{idnumber}}</idnumber>
+        <questions>
+            {{#questions}}
+            <question id="{{id}}">
+                <parent>{{parentid}}</parent>
+                <name>{{name}}</name>
+                <questiontext>{{{text}}}</questiontext>
+                <questiontextformat>1</questiontextformat>
+                <generalfeedback></generalfeedback>
+                <generalfeedbackformat>1</generalfeedbackformat>
+                <defaultmark>{{defaultmark}}</defaultmark>
+                <penalty>{{penalty}}</penalty>
+                <qtype>{{qtype}}</qtype>
+                <length>1</length>
+                <stamp>{{stamp}}</stamp>
+                <version>{{version}}</version>
+                <hidden>0</hidden>
+                <timecreated>{{timecreated}}</timecreated>
+                <timemodified>{{timemodified}}</timemodified>
+                <createdby>2</createdby>
+                <modifiedby>2</modifiedby>
+                <idnumber>$@NULL@$</idnumber>
+                {{#plugin_qtype_multichoice_question}}
+                {{> qtype_multichoice_question }}
+                {{/plugin_qtype_multichoice_question}}
+                <question_hints>
+                </question_hints>
+                <tags>
+                </tags>
+            </question>
+            {{/questions}}
+        </questions>
+    </question_category>
+    {{/questioncategories}}
+</question_categories>

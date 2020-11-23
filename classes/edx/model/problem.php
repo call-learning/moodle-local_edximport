@@ -52,7 +52,8 @@ class problem extends base {
         switch ($node->nodeName) {
             case 'multiplechoiceresponse':
                 $choicegroup = $node->firstChild;
-                $question->label = $choicegroup->attributes->getNamedItem('label')->textContent;
+                $question->label = $choicegroup->attributes->getNamedItem('label') ?
+                    $choicegroup->attributes->getNamedItem('label')->textContent: '';
                 $question->type = $choicegroup->attributes->getNamedItem('type') ?
                     $choicegroup->attributes->getNamedItem('type')->textContent : '';
                 self::convert_choices($question, $choicegroup);
@@ -85,11 +86,15 @@ class problem extends base {
         $this->set_parent($question);
     }
 
-    public function add_solution($htmlsolution) {
-        $this->solutions[] = $htmlsolution;
+    public function add_solution(question\solution $solution) {
+        $this->solutions[] = $solution;
     }
 
     public static function is_known_question($questiontype) {
         return class_exists(self::QUESTION_CLASS . $questiontype);
+    }
+
+    public function get_content() {
+        // TODO: Implement get_content() method.
     }
 }

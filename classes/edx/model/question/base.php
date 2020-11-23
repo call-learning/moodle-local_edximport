@@ -24,7 +24,9 @@
 
 namespace local_edximport\edx\model\question;
 
-class base extends \local_edximport\edx\model\base {
+use local_edximport\edx\model\html_content;
+
+abstract class base extends \local_edximport\edx\model\base  implements html_content{
     public function __construct() {
         parent::__construct([]);
     }

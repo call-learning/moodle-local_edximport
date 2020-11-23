@@ -24,68 +24,35 @@
 
 namespace local_edximport\converter\output;
 
-use local_edximport\converter\edx_moodle_model;
+use local_edximport\converter\entity_pool;
+use local_edximport\converter\ref_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
-class inforef extends base {
+class inforef extends base_output  {
 
-    protected $refmanager = null;
-    protected $componenttype = null;
-    protected $refdata = null;
+    protected $entityid;
+    protected $type;
 
-    /**
-     * @param $model
-     */
-    public function __construct($outputdir, $refmanager, $componenttype, $refdata = null) {
-        parent::__construct($outputdir);
-        $this->refmanager = $refmanager;
-        $this->componenttype = $componenttype;
-        $this->refdata = $refdata;
+    public function __construct($modeldata,$type,$entityid) {
+        parent::__construct($modeldata);
+        $this->type = $type;
+        $this->entityid = $entityid;
     }
 
     /**
+     * Export for template
      *
+     * @param \renderer_base $output
+     * @return array|mixed|object|\stdClass|null
      */
-    public function create_backup() {
-        global $CFG;
-        require_once($CFG->dirroot . '/backup/util/interfaces/checksumable.class.php');
-        require_once($CFG->dirroot . '/backup/backup.class.php');
-        $componentid = null;
-        if (!empty($this->refdata->moduleid)) {
-            $componentid = $this->refdata->moduleid;
-        }
-
-        if ($this->componenttype == 'course') {
-            $this->create_info_ref('course','course', null);
-        } else if ($this->componenttype == 'activity') {
-            $this->create_info_ref(
-                'activities/' . $this->refdata->type . '_' . $this->refdata->moduleid,
-                $this->refdata->type,
-                $this->refdata->moduleid);
-        }
-    }
-
-    protected function create_info_ref($inforefpath, $ctype,$currentcid) {
-        $this->open_xml_writer($inforefpath.'/inforef.xml');
-        $this->xmlwriter->begin_tag('inforef');
-        $this->xmlwriter->begin_tag('fileref');
-        foreach ($this->refmanager->get_refs_for_type('file') as $componenttype => $filerefdata) {
-            foreach ($filerefdata as $componentid => $filesid) {
-                foreach ($filesid as $fileid) {
-                    if (
-                        $componenttype == $ctype ) {
-                        if ($currentcid && $componentid != $currentcid) {
-                            continue;
-                        }
-                        $this->write_xml('file',
-                            array('id' => $fileid));
-                    }
-                }
-            }
-        }
-        $this->xmlwriter->end_tag('fileref');
-        $this->xmlwriter->end_tag('inforef');
-        $this->close_xml_writer();
+    public function export_for_template(\renderer_base $output) {
+        $entityrefs = $this->modeldata;
+        /** @var ref_manager $entityrefs */
+        $refdata =  new \stdClass();
+        $refdata->rolerefs =     $entityrefs->get_refs($this->type, $this->entityid, 'role');
+        $refdata->questioncategoryrefs =     $entityrefs->get_refs($this->type, $this->entityid, 'question_category');
+        $refdata->filerefs =     $entityrefs->get_refs($this->type, $this->entityid, 'file');
+        return $refdata;
     }
 }

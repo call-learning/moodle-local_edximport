@@ -25,6 +25,7 @@
 namespace local_edximport\parser;
 
 use local_edximport\edx\model\problem as edx_problem;
+use local_edximport\edx\model\question\solution;
 use XMLReader;
 
 defined('MOODLE_INTERNAL') || die();
@@ -62,7 +63,7 @@ class problem extends simple_parser {
                     );
                     break;
                 case 'solution':
-                    $this->entity->add_solution($xmlreader->readInnerXml());
+                    $this->entity->add_solution(new solution($xmlreader->readInnerXml()));
                     $xmlreader->next();
                     break;
                 default:
@@ -75,6 +76,7 @@ class problem extends simple_parser {
                     } else {
                         $this->entity->add_instruction($xmlreader->readOuterXml());
                     }
+                    $xmlreader->next();
 
             }
         }

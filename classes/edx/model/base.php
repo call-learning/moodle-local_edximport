@@ -25,7 +25,7 @@
 namespace local_edximport\edx\model;
 
 use local_edximport\converter\course_visitor;
-use local_edximport\converter\model_visitor;
+use local_edximport\converter\model_converter;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -124,13 +124,10 @@ class base {
     }
 
     /**
-     * Visitor
+     * Set parent model
+     *
+     * @param $model
      */
-    public function accept(model_visitor $visitor) {
-        $classshortname = (new \ReflectionClass($this))->getShortName();
-        return $visitor->{'visit_' . $classshortname}($this);
-    }
-
     protected function set_parent(&$model) {
         $model->parent = $this;
     }

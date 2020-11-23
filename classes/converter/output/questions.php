@@ -24,51 +24,26 @@
 
 namespace local_edximport\converter\output;
 
+use local_edximport\converter\entity_pool;
+use local_edximport\converter\ref_manager;
+
 defined('MOODLE_INTERNAL') || die();
 
-class questions extends base {
+class questions extends base_output  {
 
-    protected $questionlist = null;
-
-    protected $backupfilename = '';
-
-    /**
-     * @param $model
-     */
-    public function __construct($outputdir, $model) {
-        parent::__construct($outputdir);
-        $this->questionlist = $model;
+    public function __construct($modeldata) {
+        parent::__construct($modeldata);
     }
 
     /**
+     * Export for template
      *
+     * @param \renderer_base $output
+     * @return array|mixed|object|\stdClass|null
      */
-    public function create_backup() {
-        global $CFG;
-        require_once($CFG->dirroot . '/backup/util/interfaces/checksumable.class.php');
-        require_once($CFG->dirroot . '/backup/backup.class.php');
-
-        $now = time();
-        // Write section's inforef.xml with the file references.
-        $this->open_xml_writer('questions.xml');
-        $this->xmlwriter->begin_tag('question_category', ['category_id'=>]);
-        $this->xmlwriter->begin_tag('fileref');
-        // Write file ref here
-        $this->xmlwriter->end_tag('fileref');
-        $this->xmlwriter->end_tag('question_category');
-        $this->close_xml_writer();
-
-        $section = [
-            'number' => $this->sequential->index,
-            'name' => $this->sequential->displayname,
-            'summary' => '',
-            'summaryformat' => FORMAT_HTML,
-            'visible' => 1,
-            'availabilityjson' => '{"op":"&amp;","c":[],"showc":[]}',
-            'timemodified' => $now
-        ];
-        $this->open_xml_writer('sections/section_' . $this->sequential->id . '/section.xml');
-        $this->write_xml('section', $section);
-        $this->close_xml_writer();
+    public function export_for_template(\renderer_base $output) {
+        $entitypool = $this->modeldata;
+        /** @var entity_pool $entitypool */
+        return $entitypool->get_entities('question_category');;
     }
 }

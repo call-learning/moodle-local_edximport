@@ -26,18 +26,55 @@
 namespace local_edximport;
 defined('MOODLE_INTERNAL') || die();
 
-use local_edximport\converter\course as course_converter;
+use local_edximport\converter\moodle_model_exporter;
+use local_edximport\converter\moodlemodelBuilder;
 use local_edximport\converter\edx_moodle_model;
-use local_edximport\converter\output\course;
+use local_edximport\converter\builder\course as course_builder;
 use local_edximport\edx\model\course as course_model;
-use local_edximport\parser\simple_parser;
+use local_edximport\local\utils;
 use local_edximport\processors\course_processor;
-use progressive_parser;
 
 class edx_to_moodle_exporter {
-    public static function export($destinationpath, course_model $course, $edxarchpath) {
-        $edxtomoodle = new edx_moodle_model($course, $edxarchpath);
-        $converter = new course($destinationpath, $edxtomoodle);
-        $converter->create_backup();
+    /**
+     * @var $archivepath
+     */
+    protected $archivepath = null;
+    /**
+     * @var string|string[]|null $destfolder
+     */
+    protected $destfolder = null;
+    /**
+     * @var bool $destfoldertoremove
+     */
+    protected $destfoldertoremove = false;
+    /**
+     * @var course_model $course
+     */
+    private $course;
+
+    public function __construct(course_model $course, $edxarchpath, $destinationpath = '', $autoremove = true) {
+        $this->course = $course;
+        $this->archivepath = $edxarchpath;
+        $this->destfolder = $destinationpath;
+        if (empty($destinationpath)) {
+            $this->destfolder = \local_edximport\local\utils::make_backup_folder('edxbackupfolder');
+            $this->destfoldertoremove = $autoremove;
+        }
+    }
+
+    public function export() {
+        $builder = course_builder::convert($this->course, null, $this->archivepath);
+        $exporter = new moodle_model_exporter($this->archivepath, $this->destfolder, $builder->get_entity_pool(),
+            $builder->get_ref_manager());
+        $exporter->create_full_backup();
+        //$converter = new course($this->destfolder, $edxtomoodle);
+        //$converter->create_backup();
+        return $this->destfolder;
+    }
+
+    public function __destruct() {
+        if ($this->destfoldertoremove) {
+            utils::cleanup_dir($this->destfolder);
+        }
     }
 }

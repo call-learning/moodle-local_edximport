@@ -27,7 +27,6 @@ define('CLI_SCRIPT', true);
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/clilib.php');
 
-
 // Get the cli options.
 list($options, $unrecognised) = cli_get_params([
     'help' => false,
@@ -55,12 +54,45 @@ if ($options['help']) {
     cli_writeln($usage);
     exit(2);
 }
-
+global $DB, $USER;
+require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+require_once($CFG->dirroot . '/backup/util/helper/backup_helper.class.php');
 
 $path = '/home/laurentd/development/minesdouai/course-full';
-//empty($option['path']) || !is_file($option['path'])
-$coursemodel = \local_edximport\edx_importer::import($path);
-\local_edximport\edx_to_moodle_exporter::export('/tmp/moodle', $coursemodel, $path);
+$edximporter = new \local_edximport\edx_importer($path);
+$coursemodel = $edximporter->import();
+$edximporter = new \local_edximport\edx_to_moodle_exporter($coursemodel, $edximporter->get_archive_path(), '', false);
+$fullpathbackupfolder = $edximporter->export();
+cli_writeln('Moodle course in ' . $fullpathbackupfolder);
+//die();
+cli_writeln('Restoring...');
+// Transaction.
+$transaction = $DB->start_delegated_transaction();
+
+// Create new course.
+
+$categoryid = '1';
+$userdoingrestore = get_admin()->id;
+$restorecourse = $DB->get_record('course', array('shortname' => 'CTR'));
+if ($restorecourse) {
+    restore_dbops::delete_course_content($restorecourse->id);
+    $courseid = $restorecourse->id;
+} else {
+    $courseid = restore_dbops::create_new_course('Course Test Restore', 'CTR', $categoryid);
+}
+
+// Restore backup into course.
+$backupcoursesubpath = basename($fullpathbackupfolder);
+$controller = new restore_controller($backupcoursesubpath, $courseid,
+    backup::INTERACTIVE_NO, backup::MODE_CONVERTED, $userdoingrestore,
+    backup::TARGET_NEW_COURSE);
+$controller->execute_precheck();
+$controller->execute_plan();
+
+// Commit.
+$transaction->allow_commit();
+
+
 //if(empty($option['path']) || !is_file($option['path'])) {
 //    $courseid = \local_edximport\edx_importer::import($option['path']);
 //} else {

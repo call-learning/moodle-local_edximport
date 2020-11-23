@@ -26,21 +26,37 @@
 namespace local_edximport;
 defined('MOODLE_INTERNAL') || die();
 
+use local_edximport\local\utils;
 use local_edximport\parser\simple_parser;
 use local_edximport\processors\course_processor;
 
 class edx_importer {
-    public static function decompress_archive($filepath, $tempdirname) {
-        $archive = new PharData($filepath);
-        if (!$tempdirname) {
-            $tempdirname = \html_writer::random_id('edximport');
+    protected $archivepath = null;
+    protected $archivetoremove = false;
+
+    public function __construct($archivepath) {
+        if (!is_dir($archivepath)) {
+            $edxdestfile = \html_writer::random_id('edxdestfile');
+            $decompressedpath = make_backup_temp_directory($edxdestfile);
+            utils::decompress_archive($archivepath, $decompressedpath);
+            $this->archivepath = $decompressedpath . '/course';
+            $this->archivetoremove = true;
+        } else {
+            $this->archivepath = $archivepath;
         }
-        make_backup_temp_directory($tempdirname);
-        $decompressdest = get_backup_temp_directory($tempdirname);
-        $archive->extractTo($decompressdest);
     }
-    public static function import($archivepath) {
-        $course = simple_parser::simple_process_entity($archivepath,'course');
+    public function import() {
+        $course = simple_parser::simple_process_entity($this->archivepath , 'course');
         return $course;
+    }
+
+    public function get_archive_path() {
+        return $this->archivepath;
+    }
+
+    public function __destruct() {
+        if ($this->archivetoremove) {
+            utils::cleanup_dir($this->archivepath);
+        }
     }
 }

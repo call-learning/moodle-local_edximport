@@ -25,6 +25,8 @@
 
 namespace local_edximport\converter;
 
+use core_component;
+use local_edximport\local\parser_utils;
 use moodle_exception;
 
 class utils {
@@ -56,11 +58,30 @@ class utils {
         static $filearea = null;
         global $CFG;
         require_once($CFG->dirroot . '/backup/util/interfaces/checksumable.class.php');
-        require_once($CFG->dirroot . '/backup/backup.class.php');
-        require_once($CFG->dirroot . '/backup/backup_qtype_plugin.class.php');
-        if($filearea  == null) {
+        require_once($CFG->dirroot . '/backup/moodle2/backup_qtype_plugin.class.php');
+        if ($filearea == null) {
+            $qtypes = core_component::get_plugin_list('qtype');
+            foreach ($qtypes as $name => $path) {
+                // TODO : I am not too clear on how this is automatically loaded in the backup procedure.
+                // right now if we don't do this the class are not loaded.
+                $classfile = $path . '/backup/moodle2/backup_qtype_' . $name . '_plugin.class.php';
+                if (file_exists($classfile)) {
+                    require_once($classfile);
+                }
+            }
             $filearea = \backup_qtype_plugin::get_components_and_fileareas();
         }
-        return $filearea[$qtype];
+        return $filearea["qtype_" . $qtype];
+    }
+
+    public static function get_original_site_identifier() {
+        return md5(get_site_identifier());
+    }
+
+    public static function get_content_for_module($module) {
+        $content = method_exists($module, 'get_content') ?
+            $module->get_content() : '';
+        $content = parser_utils::change_html_static_ref($content);
+        return $content;
     }
 }

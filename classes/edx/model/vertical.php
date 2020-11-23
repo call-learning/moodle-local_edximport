@@ -52,7 +52,7 @@ class vertical extends base {
     }
 
     protected function add_indexed(base $model) {
-        $this->indexedentities[$model->index] = $model;
+        $this->indexedentities[] = $model;
     }
 
     public function add_html(html $html) {
