@@ -82,6 +82,7 @@ class ref_manager {
         if (!empty($this->refs[$componenttype][$id][$moodlereftype])) {
             return $this->refs[$componenttype][$id][$moodlereftype];
         }
+        return [];
     }
 
     /**

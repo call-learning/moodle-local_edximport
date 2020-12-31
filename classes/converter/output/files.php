@@ -45,7 +45,7 @@ class files extends base_output  {
         $entitypool = $this->modeldata;
         /** @var entity_pool $entitypool */
         $data =  new \stdClass();
-        $data->files = $entitypool->get_entities('file');
+        $data->files = array_values($entitypool->get_entities('file'));
         return $data;
     }
 }

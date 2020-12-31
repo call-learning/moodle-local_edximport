@@ -29,21 +29,5 @@ use local_edximport\converter\ref_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
-class questions extends base_output  {
-
-    public function __construct($modeldata) {
-        parent::__construct($modeldata);
-    }
-
-    /**
-     * Export for template
-     *
-     * @param \renderer_base $output
-     * @return array|mixed|object|\stdClass|null
-     */
-    public function export_for_template(\renderer_base $output) {
-        $entitypool = $this->modeldata;
-        /** @var entity_pool $entitypool */
-        return array_values($entitypool->get_entities('question_category'));
-    }
+class activity_roles extends base_output {
 }

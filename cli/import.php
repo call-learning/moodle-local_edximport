@@ -64,7 +64,7 @@ $coursemodel = $edximporter->import();
 $edximporter = new \local_edximport\edx_to_moodle_exporter($coursemodel, $edximporter->get_archive_path(), '', false);
 $fullpathbackupfolder = $edximporter->export();
 cli_writeln('Moodle course in ' . $fullpathbackupfolder);
-//die();
+die();
 cli_writeln('Restoring...');
 // Transaction.
 $transaction = $DB->start_delegated_transaction();

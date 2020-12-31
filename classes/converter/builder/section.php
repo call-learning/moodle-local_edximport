@@ -71,16 +71,23 @@ class section extends base {
         $section->summary = '';
         $section->title = $model->displayname;
         $section->summaryformat = FORMAT_HTML;
-        $section->sequence = $index;
         $section->visible = 1;
         $section->availabilityjson = '$@NULL@$';
         $section->timemodified = $now;
-        $this->helper->entitypool->set_data('section', $sectionid, $section);
         $allmodules = [];
         foreach ($model->sequentials as $s) {
-            self::convert_sequential($s, $section);
+            $this->convert_sequential($s, $section);
         }
+        $allrelatedactivities = array_filter($this->helper->entitypool->get_entities('activity'),
+            function($a) use ($section) {
+                return $a->sectionid == $section->id;
+            }
+        );
 
+        $section->sequence = join(',', array_map(function($a) {
+            return $a->id;
+        }, $allrelatedactivities));
+        $this->helper->entitypool->set_data('section', $sectionid, $section);
         return $section;
     }
 
@@ -104,6 +111,9 @@ class section extends base {
         foreach ($s->verticals as $v) {
             // Now check every activity in the vertical and accumulate all static entity.
             foreach ($v->indexedentities as $index => $entity) {
+                if ($this->helper->is_discussion($entity)) {
+                    continue; // Ignore discussion for now.
+                }
                 if ($this->helper->is_static_content($entity)) {
                     $edxstatic[] = $entity;
                     $edxproblems[] = $entity; // Consider this as a part of a problem too.
@@ -111,19 +121,18 @@ class section extends base {
                     if ($this->helper->is_problem($entity)) {
                         $edxproblems[] = $entity;
                     } else {
-                        $this->purge_static($edxstatic, $sectiondata);
+                        $this->purge_static($edxstatic, $v->displayname, $sectiondata->id, $sectiondata->number);
                     }
                 }
             }
             if (count($v->problems) > 0) { // There was at least a problem, so try to convert all of this into a single quiz/problem.
-                quiz::convert($edxproblems, $this->helper, $sectiondata->title, $sectiondata->id, $sectiondata->number);
+                quiz::convert($edxproblems, $this->helper, $v->displayname, $sectiondata->id, $sectiondata->number);
+                $this->purge_static($edxstatic, $v->displayname, $sectiondata->id, $sectiondata->number);
+                $edxproblems = [];
             }
-            $this->purge_static($edxstatic, $sectiondata);
-            $edxproblems = [];
         }
-        $this->purge_static($edxstatic, $sectiondata);
+        $this->purge_static($edxstatic, $s->displayname, $sectiondata->id, $sectiondata->number);
     }
-
 
     /**
      * Purge static items into either a page or a book
@@ -132,11 +141,11 @@ class section extends base {
      * @param \stdClass $sectiondata
      * @throws \moodle_exception
      */
-    protected function purge_static(&$models, $sectiondata) {
+    protected function purge_static(&$models, $title, $sectionid, $sectionnumber) {
         if (count($models) > 1) {
-            book::convert($models, $this->helper, $sectiondata->title, $sectiondata->id, $sectiondata->number);
+            book::convert($models, $this->helper, $title, $sectionid, $sectionnumber);
         } else if (!empty($models)) {
-            page::convert($models, $this->helper, $sectiondata->title, $sectiondata->id, $sectiondata->number);
+            page::convert($models, $this->helper, $title, $sectionid, $sectionnumber);
         }
         $models = []; // Empty the list.
     }

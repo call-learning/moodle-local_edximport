@@ -100,9 +100,14 @@ class moodle_backup implements \renderable, \templatable {
         ];
         $data->activities = [];
         $data->settings = [
-            (object) ['level' => 'root', 'name' => 'name', 'value' => $backupfilename]
+            (object) ['level' => 'root', 'name' => 'filename', 'value' => $backupfilename],
+            (object) ['level' => 'root', 'name' => 'users', 'value' => 0],
+            (object) ['level' => 'root', 'name' => 'role_assignments', 'value' => 0],
+            (object) ['level' => 'root', 'name' => 'activities', 'value' => 1],
+            (object) ['level' => 'root', 'name' => 'blocks', 'value' => 0],
+            (object) ['level' => 'root', 'name' => 'files', 'value' => 1],
+            (object) ['level' => 'root', 'name' => 'questionbank', 'value' => 1]
         ];
-
         foreach (entity_pool::get_instance()->get_entities('activity') as $activity) {
             $activitydata = new stdClass();
             $activitydata->moduleid = $activity->moduleid;
@@ -112,8 +117,19 @@ class moodle_backup implements \renderable, \templatable {
             $activitydata->directory = "activities/{$activity->modulename}_{$activity->id}";
             $data->activities [] = $activitydata;
             $data->settings[] = (object)
-            ['level' => 'activity', 'name' => "{$activity->modulename}_{$activity->moduleid}_included", 'value' => 1,
-                'additionaltag' => "<activity>{$activity->modulename}_{$activity->moduleid}</activity>"];
+            [
+                'level' => 'activity',
+                'name' => "{$activity->modulename}_{$activity->moduleid}_included",
+                'value' => 1,
+                'additionaltag' => "<activity>{$activity->modulename}_{$activity->moduleid}</activity>"
+            ];
+            $data->settings[] = (object)
+            [
+                'level' => 'activity',
+                'name' => "{$activity->modulename}_{$activity->moduleid}_userinfo",
+                'value' => 0,
+                'additionaltag' => "<activity>{$activity->modulename}_{$activity->moduleid}</activity>"
+            ];
         }
         $data->sections = [];
         foreach (entity_pool::get_instance()->get_entities('section') as $section) {
@@ -123,8 +139,19 @@ class moodle_backup implements \renderable, \templatable {
             $sectiondata->directory = 'sections/section_' . $section->id;
             $data->sections [] = $sectiondata;
             $data->settings[] = (object)
-            ['level' => 'section', 'name' => "section_{$section->id}_included", 'value' => 1,
-                'additionaltag' => "<section>section_{$section->id}</section>"];
+            [
+                'level' => 'section',
+                'name' => "section_{$section->id}_included",
+                'value' => 1,
+                'additionaltag' => "<section>section_{$section->id}</section>"
+            ];
+            $data->settings[] = (object)
+            [
+                'level' => 'section',
+                'name' => "section_{$section->id}_userinfo",
+                'value' => 0,
+                'additionaltag' => "<section>section_{$section->id}</section>"
+            ];
         }
 
         return $data;

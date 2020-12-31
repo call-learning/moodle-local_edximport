@@ -41,6 +41,7 @@ use local_edximport\converter\output\inforef as inforef_output;
 use local_edximport\converter\output\files as files_output;
 use local_edximport\converter\output\questions as questions_output;
 use local_edximport\converter\output\activity_grades as activity_grades_output;
+use local_edximport\converter\output\activity_roles as activity_roles_output;
 use local_edximport\converter\output\section as section_output;
 use local_edximport\converter\output\grade_history as grade_history_output;
 use renderable;
@@ -150,7 +151,9 @@ class moodle_model_exporter {
             $this->create_xml_file("activities/{$activity->modulename}_{$activity->id}/grades_history.xml",
                 new grade_history_output());
             $this->create_info_ref_file("activities/{$activity->modulename}_{$activity->id}/inforef.xml",
-                "mod_{$activity->modulename}", $activity->id);
+                "mod_{$activity->modulename}", $activity->associatedentityid);
+            $this->create_xml_file("activities/{$activity->modulename}_{$activity->id}/roles.xml",
+                new activity_roles_output($activitiesgradesitems));
         }
     }
 

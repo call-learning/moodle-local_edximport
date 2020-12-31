@@ -83,7 +83,7 @@ abstract class module extends base {
         $module->id = $id;
         $module->sectionid = $sectionid;
         $module->sectionnumber = $sectionnumber;
-        $module->idnumber = '$@NULL@$';
+        $module->idnumber = '';
         $module->title = $title;
         $module->added = $now;
         $module->version = get_component_version('mod_'.static::MODULE_TYPE);;

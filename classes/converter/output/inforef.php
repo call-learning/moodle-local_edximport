@@ -53,6 +53,9 @@ class inforef extends base_output  {
         $refdata->rolerefs =     $entityrefs->get_refs($this->type, $this->entityid, 'role');
         $refdata->questioncategoryrefs =     $entityrefs->get_refs($this->type, $this->entityid, 'question_category');
         $refdata->filerefs =     $entityrefs->get_refs($this->type, $this->entityid, 'file');
+        $refdata->hasrolerefs = !empty($refdata->rolerefs);
+        $refdata->hasquestioncategoryrefs = !empty($refdata->questioncategoryrefs);
+        $refdata->hasfilerefs = !empty($refdata->filerefs);
         return $refdata;
     }
 }

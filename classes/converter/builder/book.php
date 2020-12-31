@@ -69,7 +69,7 @@ class book extends module {
             $chapter->content = utils::get_content_for_module($chaptermodel);
             $chapter->timemodified = $now;
             $this->helper->entitypool->set_data('chapter', $id, $chapter);
-            $book->chapters = $chapter;
+            $book->chapters[] = $chapter;
             $this->helper->collect_files_refs(
                 $book->id,
                 'chapter',

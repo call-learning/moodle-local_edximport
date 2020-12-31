@@ -135,6 +135,17 @@ class builder_helper {
     }
 
     /**
+     * Check if content is a discussion
+     *
+     * @param base_edx_model $model
+     * @return bool
+     */
+    public static function is_discussion(\local_edximport\edx\model\base $model) {
+        return get_class($model) == 'local_edximport\edx\model\discussion';
+    }
+
+
+    /**
      * Collect file references in the text of this model
      *
      * @param int $entityid this is the global pool entity id
@@ -178,22 +189,24 @@ class builder_helper {
         $iframessrc = \local_edximport\local\parser_utils::html_get_iframe_src_ref($rawtext);
         if ($iframessrc) {
             foreach ($iframessrc as $ir) {
-                $fullpath = end($ir); // First match.
-                if (!empty($this->edxassetlist->$fullpath)) {
+                $filefullpath = end($ir); // First match.
+                if (!empty($this->edxassetlist->$filefullpath)) {
                     // Check if file exist in /static folder and get the related sources included.
                     // TODO check it is an html file.
-                    $htmlfilepath = $this->edxfilesdir . '/static/' . trim($fullpath, '/');
+                    $htmlfilepath = $this->edxfilesdir . '/static/' . trim($filefullpath, '/');
                     if (file_exists($htmlfilepath)) {
                         $srcset = \local_edximport\local\parser_utils::html_get_src_ref(file_get_contents($htmlfilepath));
                         if ($srcset) {
                             foreach ($srcset as $src) {
-                                $fullpath = end($src); // First match.
-                                if (!empty($this->edxassetlist->$fullpath)) {
+                                $subfilesrc = end($src); // First match.
+                                if (!empty($this->edxassetlist->$subfilesrc)) {
+                                    $subfilename = basename($subfilesrc);
+                                    $subfilepath = (dirname($subfilesrc) == '.')? '/' : dirname($subfilesrc);
                                     $filedata = file::convert(null,
                                         $this,
-                                        $filename,
-                                        $filepath,
-                                        $originalpath,
+                                        $subfilename,
+                                        $subfilepath,
+                                        $subfilesrc,
                                         $filearea,
                                         $itemid,
                                         $moodlecomponent,
