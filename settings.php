@@ -37,7 +37,7 @@ if ($hassiteconfig) {
         empty($CFG->enableedximport));
 
     // Data import page.
-    $pagedesc = get_string('courseimport', 'local_edximport');
+    $pagedesc = get_string('managecourseimport', 'local_edximport');
     $pageurl = new moodle_url($CFG->wwwroot . '/local/edximport/admin/courseimport.php');
     $edximportmanagement->add('edximportmanagement',
         new admin_externalpage(

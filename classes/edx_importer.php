@@ -93,7 +93,8 @@ class edx_importer {
      * @param bool $importnewcourse
      * @param null $categoryid
      * @returns false|int courseid or false if the course has not been imported.
-     * @return false|int
+     * @return string|int either the backup folder (for the intermediate Moodle backup folder) or the newly
+     * created course.
      * @throws \coding_exception
      * @throws \dml_transaction_exception
      * @throws \restore_controller_exception
@@ -160,6 +161,6 @@ class edx_importer {
             }
             return $courseid;
         }
-        return false;
+        return $fullpathbackupfolder;
     }
 }

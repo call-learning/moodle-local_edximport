@@ -57,7 +57,7 @@ if ($data = $mform->get_data()) {
             $mform->save_file('edxcoursearchive', $tempfile, true);
             $courseid = edx_importer::import_from_path($tempfile, $progress);
             unlink($tempfile); // Remove temp file.
-            if ($courseid !== false) {
+            if (intval($courseid)) {
                 echo $OUTPUT->notification(get_string('edxcoursearchiveimported', 'local_edximport'), 'error');
                 echo $OUTPUT->continue_button(new moodle_url('/course/view.php', array('id' => $courseid)));
             } else {

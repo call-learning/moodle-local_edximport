@@ -62,7 +62,7 @@ class ref_manager {
      * Adds a reference
      *
      * @param string $componenttype type of component. Can be anything from quiz to a given module type or course
-     * @param int $id id of the component that is referencing this entity
+     * @param int $id id of the component referencing this entity
      * @param string $moodlereftype can only be a valid item in inforef.xml file
      * @param int $entityid id of the entity that can be found in the pool
      * @throws moodle_exception

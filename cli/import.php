@@ -23,8 +23,9 @@
  */
 
 use local_edximport\edx_importer;
-require_once(__DIR__ . '/../../../config.php');
+
 define('CLI_SCRIPT', true);
+require_once(__DIR__ . '/../../../config.php');
 global $CFG;
 require_once($CFG->libdir . '/clilib.php');
 
@@ -96,7 +97,7 @@ class cli_progress extends \core\progress\base {
      */
     public function start_progress($description, $max = self::INDETERMINATE,
         $parentcount = 1) {
-        cli_writeln("\n". $description);
+        cli_writeln("\n" . $description);
         parent::start_progress($description, $max, $parentcount);
     }
 
@@ -108,7 +109,8 @@ class cli_progress extends \core\progress\base {
         flush();
     }
 }
+
 $cliprogress = new cli_progress();
 cli_writeln('Starting import');
-edx_importer::import_from_path($path, $cliprogress, $options['import']);
-cli_writeln("\nImport finished");
+$pathorid = edx_importer::import_from_path($path, $cliprogress, $options['import']);
+cli_writeln("\nImport finished, returned value: " . $pathorid);

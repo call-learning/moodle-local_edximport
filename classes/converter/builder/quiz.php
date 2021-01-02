@@ -73,9 +73,6 @@ class quiz extends module {
         // TODO : Here we should not have any global feedback unless there is a description section.
         $this->helper->entitypool->set_data('quiz', $quiz->id, $quiz);
 
-        $this->helper->entityrefs->add_ref('mod_quiz', $quizid, 'question_category',
-            $questioncategory->id);
-
         $gradecategories = $this->helper->entitypool->get_entities('grade_category');
         // Get the first one.
         $globalgradecategory = reset($gradecategories);
@@ -93,7 +90,27 @@ class quiz extends module {
      * @return stdClass
      */
     protected function build_questions($questions, &$quizmodule) {
-        // Setup a category for this set of questions.
+        //// Setup a parent category for this quiz
+        $pquestioncategoryid = $this->helper->entitypool->new_entity('question_category');
+        $pquestioncategory = new stdClass();
+        $pquestioncategory->id = $pquestioncategoryid;
+        $pquestioncategory->name = 'top';
+        $pquestioncategory->info = '';
+        $pquestioncategory->infoformat = FORMAT_MOODLE;
+        $pquestioncategory->contextid = builder_helper::get_contextid(CONTEXT_MODULE, $quizmodule->moduleid);
+        $pquestioncategory->contextlevel = CONTEXT_MODULE;
+        $pquestioncategory->contextinstanceid = $quizmodule->moduleid;
+        $pquestioncategory->stamp = builder_helper::get_stamp();
+        $pquestioncategory->parentid = 0; // Always 0 here as this is a flat category structure.
+        $pquestioncategory->sortorder = 0;
+        $pquestioncategory->idnumber = '$@NULL@$';
+        $pquestioncategory->questions = [];
+        $this->helper->entitypool->set_data(
+            'question_category',
+            $pquestioncategoryid,
+            $pquestioncategory);
+
+        // Now setup a category for this set of questions.
         $questioncategoryid = $this->helper->entitypool->new_entity('question_category');
         $questioncategory = new stdClass();
         $questioncategory->id = $questioncategoryid;
@@ -104,12 +121,13 @@ class quiz extends module {
         $questioncategory->contextlevel = CONTEXT_MODULE;
         $questioncategory->contextinstanceid = $quizmodule->moduleid;
         $questioncategory->stamp = builder_helper::get_stamp();
-        $questioncategory->parentid = 0; // Always 0 here as this is a flat category structure.
+        $questioncategory->parentid = $pquestioncategoryid; // The top parent category ID.
         $questioncategory->sortorder = 0;
         $questioncategory->idnumber = '$@NULL@$';
         $questioncategory->questions = [];
         foreach ($questions as $index => $edxquestion) {
             $question = question::convert($edxquestion, $this->helper, $quizmodule->id);
+
             $questioncategory->questions[] = $question->get_entity_data();
             // Add related question instance entity (in the quiz model).
             $questioninstance = question_instance::convert($edxquestion,
@@ -121,12 +139,19 @@ class quiz extends module {
             'question_category',
             $questioncategoryid,
             $questioncategory);
+
         // Add info ref.
         $this->helper->entityrefs->add_ref(
+            'mod_quiz',
+            $quizmodule->id,
             'question_category',
-            $questioncategoryid,
-            'question_category',
-            $questioncategoryid);
+            $questioncategoryid
+            );
+        $this->helper->entityrefs->add_ref(
+                  'mod_quiz',
+                    $quizmodule->id,
+                    'question_category',
+                    $pquestioncategoryid);
         return $questioncategory;
     }
 }

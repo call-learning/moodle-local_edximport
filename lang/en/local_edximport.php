@@ -24,6 +24,7 @@
 $string['pluginname'] = 'edX Course Import';
 $string['courseimport'] = 'Import an edX Course';
 $string['import'] = 'Import';
+$string['managecourseimport'] = 'Manage course import';
 $string['edxcoursearchiveimported'] = 'Archive imported';
 $string['edxcoursearchiveimported:error'] = 'Archive importation error';
 $string['enableedximport'] = 'enable edX Import';
