@@ -24,9 +24,10 @@
 
 namespace local_edximport\converter\builder;
 
+use core_course_category;
 use local_edximport\edx\model\base as base_edx_model;
 use local_edximport\edx\model\course as course_model;
-
+use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -38,11 +39,11 @@ class course extends base {
      * @param builder_helper $helper
      * @param mixed ...$additionalargs
      * @return mixed : matching enti
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
         if (!($originalmodels instanceof course_model)) {
-            throw new \moodle_exception('We cannot convert from anything else than a course model');
+            throw new moodle_exception('We cannot convert from anything else than a course model');
         }
         $course = new course(
             new builder_helper($additionalargs[0], $originalmodels->assets),
@@ -60,13 +61,13 @@ class course extends base {
      *
      * @param null $args
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $model = $this->models;
         $courseid = $this->helper->entitypool->new_entity('course');
         $now = time();
-        $miscellaneous = \core_course_category::get_default();
+        $miscellaneous = core_course_category::get_default();
         $course = (object) [
             'id' => self::get_fake_course_id(),
             'contextid' => $this->helper->get_contextid(CONTEXT_COURSE),
@@ -106,19 +107,19 @@ class course extends base {
             'description' => $miscellaneous->description,
         ];
         $this->helper->entitypool->set_data('course', $courseid, $course);
-        grade_category::convert($model, $this->helper, '$@NULL@$','Default category');
+        grade_category::convert($model, $this->helper, '$@NULL@$', 'Default category');
         foreach ($model->chapters as $index => $c) {
             section::convert($c, $this->helper, $index);
         }
         return $course;
     }
 
-    public static function get_default_course_format() {
-        return 'topics';
-    }
-
     public static function get_fake_course_id() {
         return 2;
+    }
+
+    public static function get_default_course_format() {
+        return 'topics';
     }
 }
 

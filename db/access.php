@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin to import edX archive and convert it into a course
+ * Access right for the module
  *
  * @package    local_edximport
  * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
@@ -24,6 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020042012; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019052000; // Requires this Moodle version.
-$plugin->component = 'local_edximport'; // Full name of the plugin (used for diagnostics).
+$capabilities = array(
+    'local/edximport:managesettings' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+        )
+    ),
+);

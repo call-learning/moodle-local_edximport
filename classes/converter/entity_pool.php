@@ -23,12 +23,11 @@
  */
 
 namespace local_edximport\converter;
+defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use moodle_exception;
 use SebastianBergmann\FileIterator\Iterator;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Reference an enty (being file, question or other)
@@ -41,11 +40,21 @@ class entity_pool {
 
     /**
      * Setup a new entity.
+     *
      * @throws moodle_exception
      */
 
+    public static final function get_instance() {
+        static $entitypool = null;
+        if (!$entitypool) {
+            $entitypool = new entity_pool(); // Store entities information.
+        }
+        return $entitypool;
+    }
+
     /**
      * Setup a new entity.
+     *
      * @param $entitytype
      * @return int|mixed|string the new entity
      */
@@ -104,14 +113,5 @@ class entity_pool {
         }
         return null;
     }
-
-    public static final function get_instance() {
-        static $entitypool = null;
-        if (!$entitypool) {
-            $entitypool = new entity_pool(); // Store entities information.
-        }
-        return $entitypool;
-    }
-
 
 }

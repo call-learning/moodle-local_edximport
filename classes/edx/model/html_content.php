@@ -26,6 +26,18 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Interface html_content
+ *
+ * A dataobject type of class
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 interface html_content {
+    /**
+     * @return mixed
+     */
     public function get_content();
 }

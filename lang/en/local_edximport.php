@@ -21,4 +21,14 @@
  * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$string['pluginname'] = 'edX Import';
+$string['pluginname'] = 'edX Course Import';
+$string['courseimport'] = 'Import an edX Course';
+$string['import'] = 'Import';
+$string['edxcoursearchiveimported'] = 'Archive imported';
+$string['edxcoursearchiveimported:error'] = 'Archive importation error';
+$string['enableedximport'] = 'enable edX Import';
+$string['edxcoursearchive'] = 'edX Course archive';
+$string['edxcoursearchive_help'] = 'edX Course archive';
+$string['enableedximport_help'] = 'Tool to import edX course into a new moodle course';
+$string['edximportmanagement'] = 'Manage edX course Import';
+$string['edximportgeneralsettings'] = 'edX Import General Settings';

@@ -23,13 +23,19 @@
  */
 
 namespace local_edximport\parser;
+
 use local_edximport\edx\model\sequential as edx_sequential;
 use XMLReader;
 
 defined('MOODLE_INTERNAL') || die();
 
-
-
+/**
+ * Sequential
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class sequential extends simple_parser {
     /**
      * Get the filename to parse
@@ -39,11 +45,15 @@ class sequential extends simple_parser {
     public function get_file_path() {
         return "/sequential/{$this->entityid}.xml";
     }
+
     /**
      * Process a given element.
      *
      * This method can also have side effects on the xmlreader (move to next node for example)
+     *
      * @param XMLReader $xmlreader
+     * @return bool
+     * @throws \moodle_exception
      */
     public function process_element(&$xmlreader) {
         if ($xmlreader->nodeType == XMLReader::ELEMENT) { // Opening tags only.

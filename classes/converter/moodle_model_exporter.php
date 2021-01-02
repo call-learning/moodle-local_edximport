@@ -23,10 +23,13 @@
  */
 
 namespace local_edximport\converter;
+defined('MOODLE_INTERNAL') || die();
 
+use core\progress\base;
 use local_edximport\converter\output\course as course_output;
 use local_edximport\converter\output\course_enrolments as course_enrolments_output;
 use local_edximport\converter\output\course_completiondefaults as course_completiondefaults_output;
+use local_edximport\converter\output\filters as filters_output;
 use local_edximport\converter\output\grade_history;
 use local_edximport\converter\output\standard_roles as standard_roles_output;
 use local_edximport\converter\output\completion as completion_output;
@@ -44,9 +47,8 @@ use local_edximport\converter\output\activity_grades as activity_grades_output;
 use local_edximport\converter\output\activity_roles as activity_roles_output;
 use local_edximport\converter\output\section as section_output;
 use local_edximport\converter\output\grade_history as grade_history_output;
+use moodle_exception;
 use renderable;
-
-defined('MOODLE_INTERNAL') || die();
 
 class moodle_model_exporter {
     private $edxarchivepath;
@@ -57,24 +59,27 @@ class moodle_model_exporter {
     private $entitypool;
     private $entityrefs;
 
+    private $settings = null;
+
     /**
      * moodle_model_exporter constructor.
      *
      * @param $edxarchivepath
      * @param $outputdir
      */
-    public function __construct($edxarchivepath, $outputdir, $entitypool, $entityrefs) {
+    public function __construct($edxarchivepath, $outputdir, $entitypool, $entityrefs, $settings = null) {
         $this->edxarchivepath = $edxarchivepath;
         $this->outputdir = $outputdir;
         $this->entitypool = $entitypool;
         $this->entityrefs = $entityrefs;
+        $this->settings = $settings;
     }
 
     /**
      * Create a full backup
      *
      */
-    public function create_full_backup() {
+    public function create_full_backup(base $progressbar = null) {
         $course = $this->entitypool->get_entities('course');
         $course = reset($course);
         $this->create_xml_file('moodle_backup.xml', new moodle_backup_output($course->id, $course->format));
@@ -87,10 +92,10 @@ class moodle_model_exporter {
         $this->create_xml_file('gradebook.xml', new gradebook_output());
 
         $this->create_course_xml($course);
-        $this->create_sections_xml();
-        $this->create_activities_xml();
+        $this->create_sections_xml($progressbar);
+        $this->create_activities_xml($progressbar);
         $this->create_xml_file('questions.xml', new questions_output($this->entitypool));
-        $this->create_files_xml();
+        $this->create_files_xml($progressbar);
     }
 
     public function create_xml_file($filename, renderable $templatable) {
@@ -109,23 +114,49 @@ class moodle_model_exporter {
     /**
      * Create course/course.xml
      *
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function create_course_xml($course) {
+        global $CFG;
+        require_once($CFG->libdir . '/filterlib.php');
+
         $this->create_xml_file('course/course.xml', new course_output($course));
         $this->create_xml_file('course/enrolments.xml', new course_enrolments_output());
         $this->create_xml_file('course/roles.xml', new standard_roles_output());
         $this->create_xml_file('course/completiondefaults.xml', new course_completiondefaults_output());
+        if ($this->get_setting('hasmathjax')) {
+            $this->create_xml_file('course/filters.xml', new filters_output(
+                (object) array('actives' => array('mathjaxloader' => TEXTFILTER_ON))
+            ));
+        }
         $this->create_info_ref_file('course/inforef.xml', 'course', null);
+    }
+
+    private function get_setting($settingname) {
+        if (!empty($this->settings) && !empty($this->settings->$settingname)) {
+            return $this->settings->$settingname;
+        }
+        return false;
+    }
+
+    /**
+     * Create file entities
+     *
+     */
+    public function create_info_ref_file($path, $type, $entityid) {
+        $this->create_xml_file($path, new inforef_output($this->entityrefs, $type, $entityid));
     }
 
     /**
      * Create sections/section_xxx
      */
-    public function create_sections_xml() {
+    public function create_sections_xml(base $progressbar = null) {
         foreach ($this->entitypool->get_entities('section') as $section) {
             $this->create_xml_file("sections/section_{$section->id}/section.xml", new section_output($section));
             $this->create_info_ref_file("sections/section_{$section->id}/inforef.xml", 'section', $section->id);
+            if ($progressbar) {
+                $progressbar->progress();
+            }
         }
     }
 
@@ -133,7 +164,7 @@ class moodle_model_exporter {
      *  Create activities/<type>_xxx
      *
      */
-    public function create_activities_xml() {
+    public function create_activities_xml(base $progressbar = null) {
         $allgradeitems = $this->entitypool->get_entities('grade_item');
         foreach ($this->entitypool->get_entities('activity') as $activity) {
             $activityoutputclass = "local_edximport\\converter\\output\\activity_{$activity->modulename}";
@@ -154,6 +185,13 @@ class moodle_model_exporter {
                 "mod_{$activity->modulename}", $activity->associatedentityid);
             $this->create_xml_file("activities/{$activity->modulename}_{$activity->id}/roles.xml",
                 new activity_roles_output($activitiesgradesitems));
+            if ($this->get_setting('hasmathjax')) {
+                $this->create_xml_file("activities/{$activity->modulename}_{$activity->id}/filters.xml",
+                    new filters_output(null));
+            }
+            if ($progressbar) {
+                $progressbar->progress();
+            }
         }
     }
 
@@ -161,39 +199,34 @@ class moodle_model_exporter {
      * Create file entities
      *
      */
-    public function create_files_xml() {
+    public function create_files_xml(base $progressbar = null) {
         $this->create_xml_file('files.xml', new files_output($this->entitypool));
-        $this->copy_files();
+        $this->copy_files($progressbar);
     }
 
-    /**
-     * Create file entities
-     *
-     */
-    public function create_info_ref_file($path, $type, $entityid) {
-        $this->create_xml_file($path, new inforef_output($this->entityrefs,$type,$entityid));
-    }
-
-    protected function copy_files() {
+    protected function copy_files(base $progressbar = null) {
         // Write file data..
         $files = $this->entitypool->get_entities('file');
-        foreach($files as $filedata) {
+        foreach ($files as $filedata) {
             $hashpath = $this->outputdir . '/files/' . substr($filedata->contenthash, 0, 2);
             $hashfile = "$hashpath/{$filedata->contenthash}";
 
             if (file_exists($hashfile)) {
                 if (filesize($hashfile) !== $filedata->filesize) {
-                    throw new \moodle_exception('same_hash_different_size');
+                    throw new moodle_exception('same_hash_different_size');
                 }
             } else {
                 check_dir_exists($hashpath);
                 if (!copy($filedata->originalfullpath, $hashfile)) {
-                    throw new \moodle_exception('unable_to_copy_file');
+                    throw new moodle_exception('unable_to_copy_file');
                 }
 
                 if (filesize($hashfile) !== $filedata->filesize) {
-                    throw new \moodle_exception('filesize_different_after_copy');
+                    throw new moodle_exception('filesize_different_after_copy');
                 }
+            }
+            if ($progressbar) {
+                $progressbar->progress();
             }
         }
     }

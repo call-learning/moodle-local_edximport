@@ -30,6 +30,13 @@ use XMLReader;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Problem
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class problem extends simple_parser {
     const INTRO_ELEMENTS = ['p', 'label'];
 
@@ -48,6 +55,7 @@ class problem extends simple_parser {
      * This method can also have side effects on the xmlreader (move to next node for example)
      *
      * @param XMLReader $xmlreader
+     * @return bool
      */
     public function process_element(&$xmlreader) {
         if ($xmlreader->nodeType == XMLReader::ELEMENT) { // Opening tags only.

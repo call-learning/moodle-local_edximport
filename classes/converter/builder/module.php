@@ -27,6 +27,8 @@ namespace local_edximport\converter\builder;
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\edx\model\base as base_edx_model;
+use moodle_exception;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -38,11 +40,11 @@ abstract class module extends base {
      * @param base $helper
      * @param mixed ...$additionalargs
      * @return mixed : matching enti
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
         if (!($errormessage = static::check_model_valid($originalmodels))) {
-            throw new \moodle_exception($errormessage);
+            throw new moodle_exception($errormessage);
         }
         $module = new static(
             $helper,
@@ -59,18 +61,35 @@ abstract class module extends base {
     }
 
     /**
+     * Check if model valid, default check
+     *
+     * @param array|base_edx_model $originalmodels
+     * @return bool|string
+     */
+    protected static function check_model_valid($originalmodels) {
+        if (is_array($originalmodels)) {
+            foreach ($originalmodels as $model) {
+                if (builder_helper::is_static_content($model)) {
+                    return 'We cannot convert from anything else than a static model';
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Convert a series of static modules into a book
      *
      * Conversion will fill up the entity_pool and ref_pool
      *
      * @param null $args
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         static $lastglobalmoduleid = 1;
         global $CFG;
-        require_once($CFG->libdir.'/adminlib.php');
+        require_once($CFG->libdir . '/adminlib.php');
 
         $sectionnumber = $args['sectionnumber'];
         $sectionid = $args['sectionid'];
@@ -78,7 +97,7 @@ abstract class module extends base {
 
         $now = time();
         $id = $this->helper->entitypool->new_entity('activity');
-        $module = new \stdClass();
+        $module = new stdClass();
         $module->modulename = static::MODULE_TYPE;
         $module->id = $id;
         $module->sectionid = $sectionid;
@@ -86,7 +105,7 @@ abstract class module extends base {
         $module->idnumber = '';
         $module->title = $title;
         $module->added = $now;
-        $module->version = get_component_version('mod_'.static::MODULE_TYPE);;
+        $module->version = get_component_version('mod_' . static::MODULE_TYPE);
         $module->moduleid = $lastglobalmoduleid++;
 
         $this->helper->entitypool->set_data('activity', $id, $module);
@@ -97,10 +116,10 @@ abstract class module extends base {
      * Create specialised module type
      *
      * @param $module
-     * @return \stdClass
+     * @return stdClass
      */
     protected function create_specialised_module_type($module) {
-        $specmodule = new \stdClass();
+        $specmodule = new stdClass();
         $specmodule->moduleid = $module->id;
         $specmodule->modulename = static::MODULE_TYPE;
         $specmodule->contextid = builder_helper::get_contextid(CONTEXT_MODULE, $module->id);
@@ -108,28 +127,11 @@ abstract class module extends base {
     }
 
     /**
-     * Check if model valid, default check
-     *
-     * @param array|base_edx_model $originalmodels
-     * @return bool|string
-     */
-    protected static function check_model_valid($originalmodels) {
-        if (is_array($originalmodels)) {
-            foreach($originalmodels as $model) {
-                if (builder_helper::is_static_content($model)) {
-                    return 'We cannot convert from anything else than a static model';
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
      * Associate with related entity (page, book, ...)
      *
      * @param $module
      * @param $entityid
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function module_associate($module, $entityid) {
         $module->associatedentityid = $entityid;

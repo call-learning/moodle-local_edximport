@@ -26,11 +26,20 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class discussion
+ *
+ * A dataobject type of class
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class discussion extends base {
     /**
      * @var string[] $attributeslist
      */
-    protected static $attributeslist = ['category','displayname', 'target'];
+    protected static $attributeslist = ['category', 'displayname', 'target'];
 
     public function __construct($category, $displayname, $target) {
         parent::__construct(

@@ -23,13 +23,19 @@
  */
 
 namespace local_edximport\converter\builder;
+
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
+use local_edximport\converter\utils;
 use local_edximport\edx\model\base as base_edx_model;
 use local_edximport\edx\model\course as course_model;
+use local_edximport\local\parser_utils;
+use moodle_exception;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
-class question extends base  {
+
+class question extends base {
     /**
      * Convert the model and returns a set of object in a pool and set of refs
      *
@@ -37,7 +43,7 @@ class question extends base  {
      * @param base $helper
      * @param mixed ...$additionalargs
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
         $question = new question(
@@ -46,10 +52,11 @@ class question extends base  {
         );
 
         $question->data = $question->build([
-            'quizmoduleid' =>  $additionalargs[0],
+            'quizmoduleid' => $additionalargs[0],
         ]);
         return $question;
     }
+
     /**
      * Convert a series of static modules into a book
      *
@@ -57,17 +64,21 @@ class question extends base  {
      *
      * @param null $args
      * @return mixed|void
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $model = $this->models;
         $now = time();
         $quizmoduleid = $args['quizmoduleid'];
 
-        $questionmodel = new \stdClass();
+        $questionmodel = new stdClass();
         $questionid = $this->helper->entitypool->new_entity('question');
         $questionmodel->id = $questionid;
+        $questionmodel->parentid = 0;
         $questionmodel->name = $model->displayname;
+        $questionmodel->text = parser_utils::change_html_static_ref(utils::get_raw_content_from_model($model));
+        // TODO: Here we assume that a edX problem will have only one question.
+        $questionmodel->textformat = FORMAT_HTML;
         $questionmodel->generalfeedback = '';
         $questionmodel->generalfeedbackformat = FORMAT_HTML;
         $questionmodel->defaultmark = 1.000000;
@@ -91,19 +102,19 @@ class question extends base  {
                 default:
                     $questionmodel->qtype = 'multichoice';
                     $questionmodel->maxmark = 1.000;
-                    $questionmodel->plugin_qtype_multichoice_question = new \stdClass();
+                    $questionmodel->plugin_qtype_multichoice_question = new stdClass();
                     $questionmodel->plugin_qtype_multichoice_question->answers = [];
-                    //$areas = utils::get_qtype_fileareas($questionmodel->qtype);
+                    // See $areas = utils::get_qtype_fileareas($questionmodel->qtype) .
                     foreach ($edxquestion->choices as $choice) {
                         $answer = answer::convert($choice, $this->helper, $quizmoduleid);
                         $questionmodel->plugin_qtype_multichoice_question->answers[] = $answer->get_entity_data();
                     }
                     $multichoiceid = $this->helper->entitypool->new_entity('question_multichoice');
-                    $multichoice = new \stdClass();
+                    $multichoice = new stdClass();
                     $multichoice->id = $multichoiceid;
                     $multichoice->layout = 0;
                     $multichoice->single = 1;
-                    $multichoice->shuffleanswers = 1;
+                    $multichoice->shuffleanswers = (int) $model->rerandomize;
                     $multichoice->correctfeedback = get_string('correctfeedbackdefault', 'question');
                     $multichoice->correctfeedbackformat = FORMAT_HTML;
                     $multichoice->partiallycorrectfeedback = get_string('partiallycorrectfeedbackdefault', 'question');
@@ -124,7 +135,7 @@ class question extends base  {
             'questiontext',
             $questionid,
             builder_helper::get_contextid(CONTEXT_MODULE, $quizmoduleid),
-            $model->get_content(),
+            utils::get_raw_content_from_model($model),
             'question');
 
         $this->helper->entitypool->set_data('question', $questionmodel->id, $questionmodel);

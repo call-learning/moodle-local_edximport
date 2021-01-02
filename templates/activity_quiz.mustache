@@ -25,7 +25,7 @@
         <reviewoverallfeedback>4352</reviewoverallfeedback>
         <questionsperpage>1</questionsperpage>
         <navmethod>free</navmethod>
-        <shuffleanswers>1</shuffleanswers>
+        <shuffleanswers>{{shuffleanswers}}</shuffleanswers>
         <sumgrades>2.00000</sumgrades>
         <grade>{{grade}}</grade>
         <timecreated>{{timecreated}}</timecreated>
@@ -43,7 +43,7 @@
         <subplugin_quizaccess_seb_quiz>
         </subplugin_quizaccess_seb_quiz>
         <question_instances>
-            {{#questions}}
+            {{#question_instances}}
             <question_instance id="{{id}}">
                 <slot>{{slot}}</slot>
                 <page>{{page}}</page>
@@ -55,7 +55,7 @@
                 <tags>
                 </tags>
             </question_instance>
-            {{/questions}}
+            {{/question_instances}}
         </question_instances>
         <sections>
             <section id="1">

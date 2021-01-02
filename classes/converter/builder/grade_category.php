@@ -23,13 +23,16 @@
  */
 
 namespace local_edximport\converter\builder;
+
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\edx\model\base as base_edx_model;
 use local_edximport\edx\model\course as course_model;
+use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
-class grade_category extends base  {
+
+class grade_category extends base {
     /**
      * Convert the model and returns a set of object in a pool and set of refs
      *
@@ -37,23 +40,24 @@ class grade_category extends base  {
      * @param builder_helper $helper
      * @param mixed ...$additionalargs
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
         global $CFG;
-        require_once($CFG->dirroot.'/lib/grade/constants.php');
+        require_once($CFG->dirroot . '/lib/grade/constants.php');
         $gradecategory = new grade_category(
             $helper,
             $originalmodels
         );
 
         $gradecategory->data = $gradecategory->build([
-            'parent' =>  $additionalargs[0],
+            'parent' => $additionalargs[0],
             'fullname' => $additionalargs[1],
             'aggregation' => GRADE_AGGREGATE_SUM,
         ]);
         return $gradecategory;
     }
+
     /**
      * Convert a series of static modules into a book
      *
@@ -61,7 +65,7 @@ class grade_category extends base  {
      *
      * @param null $args
      * @return mixed|void
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $now = time();

@@ -26,11 +26,12 @@ namespace local_edximport\converter\output;
 
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
+use renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
 class activity_page extends base_output {
-    public function export_for_template(\renderer_base $output) {
+    public function export_for_template(renderer_base $output) {
         return empty($this->modeldata) ? ((object) array()) : $this->modeldata;
     }
 }

@@ -28,7 +28,10 @@ use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\converter\utils;
 use local_edximport\edx\model\base as base_edx_model;
+use local_edximport\local\parser_utils;
+use moodle_exception;
 use phpDocumentor\Reflection\Types\Array_;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -42,7 +45,7 @@ class book extends module {
      *
      * @param null $args
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $models = $this->models;
@@ -60,13 +63,13 @@ class book extends module {
         $book->chapters = [];
         foreach ($models as $index => $chaptermodel) {
             $id = $this->helper->entitypool->new_entity('chapter');
-            $chapter = new \stdClass();
+            $chapter = new stdClass();
             $chapter->id = $id;
             $chapter->type = 'chapter';
             $chapter->pagenum = $index;
             $chapter->subchapter = 0;
             $chapter->title = $chaptermodel->displayname;
-            $chapter->content = utils::get_content_for_module($chaptermodel);
+            $chapter->content = parser_utils::change_html_static_ref(utils::get_raw_content_from_model($chaptermodel));
             $chapter->timemodified = $now;
             $this->helper->entitypool->set_data('chapter', $id, $chapter);
             $book->chapters[] = $chapter;
@@ -75,7 +78,7 @@ class book extends module {
                 'chapter',
                 $chapter->id,
                 $this->helper->get_contextid(CONTEXT_MODULE, $book->moduleid),
-                $chaptermodel->get_content(),
+                utils::get_raw_content_from_model($chaptermodel),
                 'mod_' . static::MODULE_TYPE
             );
 

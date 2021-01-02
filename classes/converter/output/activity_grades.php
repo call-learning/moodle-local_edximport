@@ -26,18 +26,20 @@ namespace local_edximport\converter\output;
 
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
+use renderer_base;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
-class activity_grades extends base_output  {
+class activity_grades extends base_output {
 
     /**
      * Export for template
      *
-     * @param \renderer_base $output
-     * @return array|mixed|object|\stdClass|null
+     * @param renderer_base $output
+     * @return array|mixed|object|stdClass|null
      */
-    public function export_for_template(\renderer_base $output) {
-        return (object) array('gradeitems'=>$this->modeldata);
+    public function export_for_template(renderer_base $output) {
+        return (object) array('gradeitems' => $this->modeldata);
     }
 }

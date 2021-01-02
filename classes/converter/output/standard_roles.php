@@ -29,5 +29,5 @@ use local_edximport\converter\ref_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
-class standard_roles extends base_output  {
+class standard_roles extends base_output {
 }

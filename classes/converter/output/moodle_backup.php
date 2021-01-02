@@ -24,34 +24,41 @@
 
 namespace local_edximport\converter\output;
 
+use backup;
 use local_edximport\converter\builder\builder_helper;
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\utils;
+use moodle_exception;
+use renderable;
 use renderer_base;
 use local_edximport\converter\builder\course as course_builder;
 use stdClass;
+use templatable;
 
 defined('MOODLE_INTERNAL') || die();
 
-class moodle_backup implements \renderable, \templatable {
+class moodle_backup implements renderable, templatable {
 
     /**
      * @var mixed|null $course
      */
     protected $course = null;
 
+    protected $settings = null;
+
     /**
      * moodle_backup constructor.
      *
      * @param $courseid
-     * @param $courseformat
-     * @throws \moodle_exception
+     * @param $settings
+     * @throws moodle_exception
      */
-    public function __construct($courseid, $courseformat) {
+    public function __construct($courseid, $settings) {
 
         $course = entity_pool::get_instance()->get_entities('course');
         $this->course = reset($course);
         $this->courseid = $courseid;
+        $this->settings = $settings;
     }
 
     /**
@@ -59,7 +66,7 @@ class moodle_backup implements \renderable, \templatable {
      *
      * @param renderer_base $output
      * @return object
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function export_for_template(renderer_base $output) {
         global $CFG;
@@ -76,11 +83,11 @@ class moodle_backup implements \renderable, \templatable {
                 'release' => $CFG->backup_release,
                 'version' => $CFG->backup_version,
                 'date' => $now,
-                'type' => \backup::TYPE_1COURSE,
-                'format' => \backup::FORMAT_MOODLE,
-                'interactive' => \backup::INTERACTIVE_YES,
-                'mode' => \backup::MODE_CONVERTED,
-                'execution' => \backup::EXECUTION_INMEDIATE,
+                'type' => backup::TYPE_1COURSE,
+                'format' => backup::FORMAT_MOODLE,
+                'interactive' => backup::INTERACTIVE_YES,
+                'mode' => backup::MODE_CONVERTED,
+                'execution' => backup::EXECUTION_INMEDIATE,
                 'executiontime' => 0,
             ],
             'course' => (object) [
@@ -105,9 +112,15 @@ class moodle_backup implements \renderable, \templatable {
             (object) ['level' => 'root', 'name' => 'role_assignments', 'value' => 0],
             (object) ['level' => 'root', 'name' => 'activities', 'value' => 1],
             (object) ['level' => 'root', 'name' => 'blocks', 'value' => 0],
+            (object) ['level' => 'root', 'name' => 'groups', 'value' => 0],
+            (object) ['level' => 'root', 'name' => 'competencies', 'value' => 0],
             (object) ['level' => 'root', 'name' => 'files', 'value' => 1],
             (object) ['level' => 'root', 'name' => 'questionbank', 'value' => 1]
         ];
+        if (!empty($this->settings) && !empty($this->settings->hasmathjax)) {
+            $data->settings[] = (object) ['level' => 'root', 'name' => 'filters', 'value' => 1]; // We backup filters so we
+            // can add mathjax filter.
+        }
         foreach (entity_pool::get_instance()->get_entities('activity') as $activity) {
             $activitydata = new stdClass();
             $activitydata->moduleid = $activity->moduleid;

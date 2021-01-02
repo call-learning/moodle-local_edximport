@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,17 +25,22 @@
 namespace local_edximport;
 defined('MOODLE_INTERNAL') || die();
 
+use core\progress\base;
 use local_edximport\converter\moodle_model_exporter;
-use local_edximport\converter\moodlemodelBuilder;
-use local_edximport\converter\edx_moodle_model;
 use local_edximport\converter\builder\course as course_builder;
 use local_edximport\edx\model\course as course_model;
 use local_edximport\local\utils;
-use local_edximport\processors\course_processor;
 
+/**
+ * Class edx_to_moodle_exporter
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class edx_to_moodle_exporter {
     /**
-     * @var $archivepath
+     * @var string $archivepath
      */
     protected $archivepath = null;
     /**
@@ -52,6 +56,14 @@ class edx_to_moodle_exporter {
      */
     private $course;
 
+    /**
+     * edx_to_moodle_exporter constructor.
+     *
+     * @param course_model $course
+     * @param $edxarchpath
+     * @param string $destinationpath
+     * @param bool $autoremove
+     */
     public function __construct(course_model $course, $edxarchpath, $destinationpath = '', $autoremove = true) {
         $this->course = $course;
         $this->archivepath = $edxarchpath;
@@ -62,16 +74,24 @@ class edx_to_moodle_exporter {
         }
     }
 
-    public function export() {
+    /**
+     * Export the course
+     *
+     * @param base|null $progressbar
+     * @return mixed|string|string[]|null
+     * @throws \moodle_exception
+     */
+    public function export(\core\progress\base $progressbar = null) {
         $builder = course_builder::convert($this->course, null, $this->archivepath);
         $exporter = new moodle_model_exporter($this->archivepath, $this->destfolder, $builder->get_entity_pool(),
-            $builder->get_ref_manager());
-        $exporter->create_full_backup();
-        //$converter = new course($this->destfolder, $edxtomoodle);
-        //$converter->create_backup();
+            $builder->get_ref_manager(), (object) array('hasmathjax' => true));
+        $exporter->create_full_backup($progressbar);
         return $this->destfolder;
     }
 
+    /**
+     * Cleanup temp dir
+     */
     public function __destruct() {
         if ($this->destfoldertoremove) {
             utils::cleanup_dir($this->destfolder);

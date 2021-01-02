@@ -29,5 +29,5 @@ use local_edximport\converter\ref_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
-class groups extends base_output  {
+class groups extends base_output {
 }

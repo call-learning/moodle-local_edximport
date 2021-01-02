@@ -28,6 +28,7 @@ use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\converter\utils;
 use local_edximport\edx\model\base as base_edx_model;
+use moodle_exception;
 use phpDocumentor\Reflection\Types\Array_;
 
 defined('MOODLE_INTERNAL') || die();
@@ -42,7 +43,7 @@ class forum extends module {
      *
      * @param null $args
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $displayname = $args['title'];

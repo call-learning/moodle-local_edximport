@@ -28,6 +28,8 @@ use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\edx\model\base as base_edx_model;
 use local_edximport\parser\sequential;
+use moodle_exception;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,7 +41,7 @@ class section extends base {
      * @param base $helper
      * @param mixed ...$additionalargs
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
         $section = new section(
@@ -58,14 +60,14 @@ class section extends base {
      *
      * @param null $args
      * @return mixed|void
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $index = $args['index'];
         $model = $this->models;
         $now = time();
         $sectionid = $this->helper->entitypool->new_entity('section');
-        $section = new \stdClass();
+        $section = new stdClass();
         $section->id = $sectionid;
         $section->number = $index;
         $section->summary = '';
@@ -125,7 +127,8 @@ class section extends base {
                     }
                 }
             }
-            if (count($v->problems) > 0) { // There was at least a problem, so try to convert all of this into a single quiz/problem.
+            if (count($v->problems) >
+                0) { // There was at least a problem, so try to convert all of this into a single quiz/problem.
                 quiz::convert($edxproblems, $this->helper, $v->displayname, $sectiondata->id, $sectiondata->number);
                 $this->purge_static($edxstatic, $v->displayname, $sectiondata->id, $sectiondata->number);
                 $edxproblems = [];
@@ -138,8 +141,8 @@ class section extends base {
      * Purge static items into either a page or a book
      *
      * @param array $models
-     * @param \stdClass $sectiondata
-     * @throws \moodle_exception
+     * @param stdClass $sectiondata
+     * @throws moodle_exception
      */
     protected function purge_static(&$models, $title, $sectionid, $sectionnumber) {
         if (count($models) > 1) {

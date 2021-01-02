@@ -23,13 +23,16 @@
  */
 
 namespace local_edximport\converter\builder;
+
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\edx\model\base as base_edx_model;
 use local_edximport\edx\model\course as course_model;
+use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
-class file extends base  {
+
+class file extends base {
     /**
      * Convert the model and returns a set of object in a pool and set of refs
      *
@@ -37,7 +40,7 @@ class file extends base  {
      * @param builder_helper $helper
      * @param mixed ...$additionalargs
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
         $file = new file(
@@ -45,8 +48,8 @@ class file extends base  {
             $originalmodels
         );
         $file->data = $file->build([
-            'filename' =>  $additionalargs[0],
-            'filepath' =>  $additionalargs[1],
+            'filename' => $additionalargs[0],
+            'filepath' => $additionalargs[1],
             'originalpath' => $additionalargs[2],
             'filearea' => $additionalargs[3],
             'itemid' => $additionalargs[4],
@@ -55,6 +58,7 @@ class file extends base  {
         ]);
         return $file;
     }
+
     /**
      * Convert a series of static modules into a book
      *
@@ -62,7 +66,7 @@ class file extends base  {
      *
      * @param null $args
      * @return mixed|void
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         // Write file data..

@@ -25,6 +25,8 @@
 use local_edximport\converter\builder\course as course_builder;
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\output\course;
+use local_edximport\edx_importer;
+use local_edximport\edx_to_moodle_exporter;
 use local_edximport\local\utils;
 
 /**
@@ -40,7 +42,7 @@ class test_edx_parser extends advanced_testcase {
      */
     public function test_decompress() {
         global $CFG;
-        $edxdestfile = \html_writer::random_id('edxdestfile');
+        $edxdestfile = html_writer::random_id('edxdestfile');
         $decompressedpath = make_backup_temp_directory($edxdestfile);
         $decompressed = utils::decompress_archive(
             $CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz',
@@ -56,7 +58,7 @@ class test_edx_parser extends advanced_testcase {
      */
     public function test_import_simple_model() {
         global $CFG;
-        $edxmporter = new \local_edximport\edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
+        $edxmporter = new edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
         $coursemodel = $edxmporter->import();
 
         $this->assertNotNull($coursemodel);
@@ -71,7 +73,7 @@ class test_edx_parser extends advanced_testcase {
     public function test_build_simple_model() {
         global $CFG;
         $edximporter =
-            new \local_edximport\edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
+            new edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
         $coursemodel = $edximporter->import();
         course_builder::convert($coursemodel, null, $edximporter->get_archive_path());
         $courses = entity_pool::get_instance()->get_entities('course');
@@ -88,7 +90,7 @@ class test_edx_parser extends advanced_testcase {
     public function test_output() {
         global $CFG, $PAGE;
         $edximporter =
-            new \local_edximport\edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
+            new edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
         $coursemodel = $edximporter->import();
         $course = course_builder::convert($coursemodel, null, $edximporter->get_archive_path());
         $renderer = $PAGE->get_renderer('local_edximport');
@@ -142,9 +144,9 @@ EOT;
     public function test_export_simple_model() {
         global $CFG;
         $edximporter =
-            new \local_edximport\edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
+            new edx_importer($CFG->dirroot . '/local/edximport/tests/fixtures/course.edx.simple.tar.gz');
         $coursemodel = $edximporter->import();
-        $edxexporter = new \local_edximport\edx_to_moodle_exporter($coursemodel, $edximporter->get_archive_path());
+        $edxexporter = new edx_to_moodle_exporter($coursemodel, $edximporter->get_archive_path());
         $fullpathbackupfolder = $edxexporter->export();
         $this->assertFileExists($fullpathbackupfolder);
     }

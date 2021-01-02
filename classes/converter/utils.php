@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,7 +23,10 @@
  */
 
 namespace local_edximport\converter;
+defined('MOODLE_INTERNAL') || die();
 
+use backup_helper;
+use backup_qtype_plugin;
 use core_component;
 use local_edximport\local\parser_utils;
 use moodle_exception;
@@ -36,7 +38,7 @@ class utils {
      * @param string $item the name of reference (like user, file, scale, outcome or grade_item)
      * we also add the type 'question' as a convenience for us.
      * @return bool
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function validate_refitemtype($itemtype) {
         global $CFG;
@@ -44,7 +46,7 @@ class utils {
         require_once($CFG->dirroot . '/backup/backup.class.php');
         require_once($CFG->dirroot . '/backup/util/helper/backup_helper.class.php');
 
-        $valid = in_array($itemtype, \backup_helper::get_inforef_itemnames());
+        $valid = in_array($itemtype, backup_helper::get_inforef_itemnames());
         if (!$valid) {
             throw new moodle_exception('Invalid inforef item type');
         }
@@ -69,7 +71,7 @@ class utils {
                     require_once($classfile);
                 }
             }
-            $filearea = \backup_qtype_plugin::get_components_and_fileareas();
+            $filearea = backup_qtype_plugin::get_components_and_fileareas();
         }
         return $filearea["qtype_" . $qtype];
     }
@@ -78,10 +80,11 @@ class utils {
         return md5(get_site_identifier());
     }
 
-    public static function get_content_for_module($module) {
+    public static function get_raw_content_from_model($module) {
         $content = method_exists($module, 'get_content') ?
             $module->get_content() : '';
-        $content = parser_utils::change_html_static_ref($content);
+        $content = str_replace('[mathjaxinline]', '\( ', $content);
+        $content = str_replace('[/mathjaxinline]', ' \)', $content);
         return $content;
     }
 }

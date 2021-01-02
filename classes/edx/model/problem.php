@@ -26,7 +26,16 @@ namespace local_edximport\edx\model;
 
 defined('MOODLE_INTERNAL') || die();
 
-class problem extends base {
+/**
+ * Class problem
+ *
+ * A dataobject type of class
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class problem extends base implements html_content {
     public $instructions = [];
 
     public $questions = [];
@@ -39,13 +48,28 @@ class problem extends base {
      */
     protected static $attributeslist = ['entityid', 'displayname', 'maxattempts', 'showanswers', 'weight', 'rerandomize'];
 
+    /**
+     * problem constructor.
+     *
+     * @param $entityid
+     * @param $displayname
+     * @param $maxattempts
+     * @param $showanswers
+     * @param $weight
+     * @param $rerandomize
+     * @throws \moodle_exception
+     */
     public function __construct($entityid, $displayname, $maxattempts, $showanswers, $weight, $rerandomize) {
-        // https://edx.readthedocs.io/projects/edx-open-learning-xml/en/latest/components/problem-components.html
+        // See https://edx.readthedocs.io/projects/edx-open-learning-xml/en/latest/components/problem-components.html .
         parent::__construct(
             compact(self::$attributeslist)
         );
     }
 
+    /**
+     * @param \DOMNode $node
+     * @return mixed
+     */
     public static function question_from_dom_node(\DOMNode $node) {
         $questionclass = self::QUESTION_CLASS . $node->nodeName;
         $question = new $questionclass();
@@ -53,7 +77,7 @@ class problem extends base {
             case 'multiplechoiceresponse':
                 $choicegroup = $node->firstChild;
                 $question->label = $choicegroup->attributes->getNamedItem('label') ?
-                    $choicegroup->attributes->getNamedItem('label')->textContent: '';
+                    $choicegroup->attributes->getNamedItem('label')->textContent : '';
                 $question->type = $choicegroup->attributes->getNamedItem('type') ?
                     $choicegroup->attributes->getNamedItem('type')->textContent : '';
                 self::convert_choices($question, $choicegroup);
@@ -69,32 +93,53 @@ class problem extends base {
         return $question;
     }
 
+    /**
+     * @param $question
+     * @param $rootnode
+     */
     protected static function convert_choices(&$question, $rootnode) {
         foreach ($rootnode->childNodes as $choicenode) {
-            $correct = (bool) $choicenode->attributes->getNamedItem('correct')->textContent;
+            $correctstring = $choicenode->attributes->getNamedItem('correct')->textContent;
+            $correct = (strtolower(trim($correctstring)) == "true") ? true : false;
             $label = $choicenode->textContent;
             $question->add_choice($correct, $label);
         }
     }
 
+    /**
+     * @param $instruction
+     */
     public function add_instruction($instruction) {
         $this->instructions[] = $instruction;
     }
 
+    /**
+     * @param question\base $question
+     */
     public function add_question(question\base $question) {
         $this->questions[] = $question;
         $this->set_parent($question);
     }
 
+    /**
+     * @param question\solution $solution
+     */
     public function add_solution(question\solution $solution) {
         $this->solutions[] = $solution;
     }
 
+    /**
+     * @param $questiontype
+     * @return bool
+     */
     public static function is_known_question($questiontype) {
         return class_exists(self::QUESTION_CLASS . $questiontype);
     }
 
+    /**
+     * Get all instructions
+     */
     public function get_content() {
-        // TODO: Implement get_content() method.
+        return join(" ", $this->instructions);
     }
 }

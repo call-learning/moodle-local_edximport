@@ -23,18 +23,18 @@
  */
 
 namespace local_edximport\edx\model;
-
+defined('MOODLE_INTERNAL') || die();
 use local_edximport\converter\course_visitor;
 use local_edximport\converter\model_converter;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class base
  *
  * A dataobject type of class
  *
- * @package local_edximport\edx\model
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class base {
     protected static $attributeslist = [];

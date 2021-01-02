@@ -23,13 +23,12 @@
  */
 
 namespace local_edximport\parser;
+defined('MOODLE_INTERNAL') || die();
 
 use local_edximport\edx\model\course as edx_course;
 use local_edximport\edx\model\wiki as edx_wiki;
 use local_edximport\local\parser_utils;
 use XMLReader;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class course_parser
@@ -54,6 +53,7 @@ class course extends simple_parser {
      * This method can also have side effects on the xmlreader (move to next node for example)
      *
      * @param XMLReader $xmlreader
+     * @return bool
      */
     public function process_element(&$xmlreader) {
         if ($xmlreader->nodeType == XMLReader::ELEMENT) { // Opening tags only.
@@ -85,8 +85,8 @@ class course extends simple_parser {
     /**
      * Parse the original model
      */
-    public function parse() {
-        parent::parse();
+    public function parse(\core\progress\base $progress = null) {
+        parent::parse($progress);
         $this->entity->add_assets(json_decode(file_get_contents($this->archivepath . '/policies/assets.json')));
     }
 }

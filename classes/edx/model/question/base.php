@@ -23,9 +23,17 @@
  */
 
 namespace local_edximport\edx\model\question;
+defined('MOODLE_INTERNAL') || die();
 
 use local_edximport\edx\model\html_content;
 
+/**
+ * Class base
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class base extends \local_edximport\edx\model\base  implements html_content{
     public function __construct() {
         parent::__construct([]);

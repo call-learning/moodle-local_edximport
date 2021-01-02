@@ -23,12 +23,11 @@
  */
 
 namespace local_edximport\converter;
+defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use moodle_exception;
 use SebastianBergmann\FileIterator\Iterator;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class ref_manager
@@ -50,6 +49,14 @@ class ref_manager {
      * @param int $id the value of the reference
      * @throws moodle_exception
      */
+
+    public static final function get_instance() {
+        static $refs = null;
+        if (!$refs) {
+            $refs = new ref_manager(); // Stores ref to entities.
+        }
+        return $refs;
+    }
 
     /**
      * Adds a reference
@@ -92,6 +99,27 @@ class ref_manager {
      * @return array and array of array keyed by component type.
      * @throws moodle_exception
      */
+    public function get_all_refs_for_type($moodlereftype) {
+        utils::validate_refitemtype($moodlereftype);
+        $refbytype = $this->get_refs_for_type($moodlereftype);
+        $allrefs = [];
+        foreach ($refbytype as $componenttype => $refs) {
+            foreach ($refs as $componentid => $refentities) {
+                foreach ($refentities as $ref) {
+                    $allrefs[] = $ref;
+                }
+            }
+        }
+        return $allrefs;
+    }
+
+    /**
+     * Get references for a moodle ref type
+     *
+     * @param $moodlereftype (file, user, ...)
+     * @return array and array of array keyed by component type.
+     * @throws moodle_exception
+     */
     public function get_refs_for_type($moodlereftype) {
         utils::validate_refitemtype($moodlereftype);
         $moodlereftypedata = [];
@@ -107,35 +135,5 @@ class ref_manager {
             }
         }
         return $moodlereftypedata;
-    }
-
-    /**
-     * Get references for a moodle ref type
-     *
-     * @param $moodlereftype (file, user, ...)
-     * @return array and array of array keyed by component type.
-     * @throws moodle_exception
-     */
-    public function get_all_refs_for_type($moodlereftype) {
-        utils::validate_refitemtype($moodlereftype);
-        $refbytype = $this->get_refs_for_type($moodlereftype);
-        $allrefs = [];
-        foreach ($refbytype as $componenttype => $refs) {
-            ;
-            foreach ($refs as $componentid => $refentities) {
-                foreach ($refentities as $ref) {
-                    $allrefs[] = $ref;
-                }
-            }
-        }
-        return $allrefs;
-    }
-
-    public static final function get_instance() {
-        static $refs = null;
-        if (!$refs) {
-            $refs = new ref_manager(); // Stores ref to entities.
-        }
-        return $refs;
     }
 }

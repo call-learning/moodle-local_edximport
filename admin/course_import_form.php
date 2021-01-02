@@ -23,7 +23,33 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+global $CFG;
+require_once($CFG->libdir . '/formslib.php');
 
-$plugin->version   = 2020042012; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019052000; // Requires this Moodle version.
-$plugin->component = 'local_edximport'; // Full name of the plugin (used for diagnostics).
+/**
+ * Import Form
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_import_form extends moodleform {
+
+    /**
+     * The form definition.
+     */
+    public function definition() {
+        $mform = $this->_form;
+
+        $mform->addElement('filepicker',
+            'edxcoursearchive',
+            get_string('edxcoursearchive', 'local_edximport')
+        );
+
+        $mform->addHelpButton('edxcoursearchive', 'edxcoursearchive', 'local_edximport');
+        $mform->setType('filetoupload', PARAM_FILE);
+
+        $this->add_action_buttons(true, get_string('import', 'local_edximport'));
+    }
+
+}

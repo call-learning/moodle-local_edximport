@@ -26,6 +26,7 @@ namespace local_edximport\converter\output;
 
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
+use renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,10 +34,10 @@ class course_enrolments extends base_output {
     /**
      * Export data for template
      *
-     * @param \renderer_base $output
+     * @param renderer_base $output
      * @return object
      */
-    public function export_for_template(\renderer_base $output) {
+    public function export_for_template(renderer_base $output) {
         $allroles = get_archetype_roles('student');
         $studentrole = reset($allroles);
         return (object) array('studentroleid' => $studentrole->id);

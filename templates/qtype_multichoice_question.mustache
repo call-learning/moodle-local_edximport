@@ -1,27 +1,29 @@
 <plugin_qtype_multichoice_question>
     <answers>
         {{#answers}}
-        <answer id="1">
-            <answertext>{{{answertext}}}</answertext>
-            <answerformat>1</answerformat>
-            <fraction>{{fraction}}</fraction>
-            <feedback></feedback>
-            <feedbackformat>1</feedbackformat>
-        </answer>
+            <answer id="{{id}}">
+                <answertext><![CDATA[{{{answertext}}}]]></answertext>
+                <answerformat>{{answerformat}}</answerformat>
+                <fraction>{{fraction}}</fraction>
+                <feedback></feedback>
+                <feedbackformat>1</feedbackformat>
+            </answer>
         {{/answers}}
     </answers>
-    <multichoice id="{{id}}">
-        <layout>0</layout>
-        <single>1</single>
-        <shuffleanswers>1</shuffleanswers>
-        <correctfeedback>Your answer is correct.</correctfeedback>
-        <correctfeedbackformat>1</correctfeedbackformat>
-        <partiallycorrectfeedback>Your answer is partially correct.</partiallycorrectfeedback>
-        <partiallycorrectfeedbackformat>1</partiallycorrectfeedbackformat>
-        <incorrectfeedback>Your answer is incorrect.</incorrectfeedback>
-        <incorrectfeedbackformat>1</incorrectfeedbackformat>
-        <answernumbering>abc</answernumbering>
-        <shownumcorrect>1</shownumcorrect>
-        <showstandardinstruction>0</showstandardinstruction>
-    </multichoice>
+    {{#multichoice}}
+        <multichoice id="{{id}}">
+            <layout>0</layout>
+            <single>1</single>
+            <shuffleanswers>{{shuffleanswers}}</shuffleanswers>
+            <correctfeedback>{{correctfeedback}}</correctfeedback>
+            <correctfeedbackformat>{{correctfeedbackformat}}</correctfeedbackformat>
+            <partiallycorrectfeedback>{{partiallycorrectfeedback}}</partiallycorrectfeedback>
+            <partiallycorrectfeedbackformat>{{partiallycorrectfeedbackformat}}</partiallycorrectfeedbackformat>
+            <incorrectfeedback>{{incorrectfeedback}}</incorrectfeedback>
+            <incorrectfeedbackformat>{{incorrectfeedbackformat}}</incorrectfeedbackformat>
+            <answernumbering>{{answernumbering}}</answernumbering>
+            <shownumcorrect>{{shownumcorrect}}</shownumcorrect>
+            <showstandardinstruction>0</showstandardinstruction>
+        </multichoice>
+    {{/multichoice}}
 </plugin_qtype_multichoice_question>

@@ -22,8 +22,34 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_edximport\converter\output;
+
+use local_edximport\converter\entity_pool;
+use local_edximport\converter\ref_manager;
+use renderer_base;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020042012; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019052000; // Requires this Moodle version.
-$plugin->component = 'local_edximport'; // Full name of the plugin (used for diagnostics).
+class filters extends base_output {
+    /**
+     * Export for template
+     *
+     * @param renderer_base $output
+     * @return array|mixed|object|stdClass|null
+     */
+    public function export_for_template(renderer_base $output) {
+        $data = new stdClass();
+        if (!empty($this->modeldata) && !empty($this->modeldata->actives)) {
+            $data->filteractives = [];
+            foreach ($this->modeldata->actives as $filtername => $status) {
+                $data->filteractives[] = (object) ['name' => $filtername, 'status' => $status];
+            }
+        }
+        if (!empty($this->modeldata) && !empty($this->modeldata->configs)) {
+            $data->filterconfigs = $this->modeldata->configs;
+        }
+
+        return $data;
+    }
+}

@@ -23,7 +23,15 @@
  */
 
 namespace local_edximport\edx\model\question;
+defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class base_choice
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class base_choice extends base {
     public $choices = [];
 

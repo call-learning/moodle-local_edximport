@@ -29,5 +29,5 @@ use local_edximport\converter\ref_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
-class grade_history extends base_output  {
+class grade_history extends base_output {
 }

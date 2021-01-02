@@ -22,28 +22,34 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define('CLI_SCRIPT', true);
-
+use local_edximport\edx_importer;
 require_once(__DIR__ . '/../../../config.php');
+define('CLI_SCRIPT', true);
+global $CFG;
 require_once($CFG->libdir . '/clilib.php');
 
 // Get the cli options.
 list($options, $unrecognised) = cli_get_params([
+    'import' => null,
     'help' => false,
-    'path' => null,
+    'path' => '~/edx-course',
 ], [
-    'h' => 'help'
+    'h' => 'help',
+    'i' => 'import'
 ]);
 
 $usage = "Import a edx archive as a new course
 
 Usage:
     # php import.php --path=<edxarchivepath>
+    # php import.php --import
     # php import.php [--help|-h]
 
 Options:
     -h --help                   Print this help.
-    --path=<edxarchivepath>     Full path of the archive to import";
+    --path=<edxarchivepath>     Full path of the archive to import
+    --import                    Convert the model AND impport it into a new moodle course
+    ";
 
 if ($unrecognised) {
     $unrecognised = implode(PHP_EOL . '  ', $unrecognised);
@@ -51,6 +57,7 @@ if ($unrecognised) {
 }
 
 if ($options['help']) {
+    cli_logo();
     cli_writeln($usage);
     exit(2);
 }
@@ -59,42 +66,49 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 require_once($CFG->dirroot . '/backup/util/helper/backup_helper.class.php');
 
 $path = '/home/laurentd/development/minesdouai/course-full';
-$edximporter = new \local_edximport\edx_importer($path);
-$coursemodel = $edximporter->import();
-$edximporter = new \local_edximport\edx_to_moodle_exporter($coursemodel, $edximporter->get_archive_path(), '', false);
-$fullpathbackupfolder = $edximporter->export();
-cli_writeln('Moodle course in ' . $fullpathbackupfolder);
-die();
-cli_writeln('Restoring...');
-// Transaction.
-$transaction = $DB->start_delegated_transaction();
 
-// Create new course.
+/**
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Class cli_progress
+ */
+class cli_progress extends \core\progress\base {
+    /**
+     * Constructs the progress reporter.
+     *
+     * @param bool $startnow If true, outputs HTML immediately.
+     * @throws coding_exception
+     */
+    public function __construct($startnow = false) {
+        if ($startnow) {
+            $this->start_progress('start');
+        }
+    }
 
-$categoryid = '1';
-$userdoingrestore = get_admin()->id;
-$restorecourse = $DB->get_record('course', array('shortname' => 'CTR'));
-if ($restorecourse) {
-    restore_dbops::delete_course_content($restorecourse->id);
-    $courseid = $restorecourse->id;
-} else {
-    $courseid = restore_dbops::create_new_course('Course Test Restore', 'CTR', $categoryid);
+    /**
+     * Start progress
+     *
+     * @param string $description
+     * @param int $max
+     * @param int $parentcount
+     * @throws coding_exception
+     */
+    public function start_progress($description, $max = self::INDETERMINATE,
+        $parentcount = 1) {
+        cli_writeln("\n". $description);
+        parent::start_progress($description, $max, $parentcount);
+    }
+
+    /**
+     * Update progress
+     */
+    protected function update_progress() {
+        cli_write(str_repeat('.', $this->get_progress_count()));
+        flush();
+    }
 }
-
-// Restore backup into course.
-$backupcoursesubpath = basename($fullpathbackupfolder);
-$controller = new restore_controller($backupcoursesubpath, $courseid,
-    backup::INTERACTIVE_NO, backup::MODE_CONVERTED, $userdoingrestore,
-    backup::TARGET_NEW_COURSE);
-$controller->execute_precheck();
-$controller->execute_plan();
-
-// Commit.
-$transaction->allow_commit();
-
-
-//if(empty($option['path']) || !is_file($option['path'])) {
-//    $courseid = \local_edximport\edx_importer::import($option['path']);
-//} else {
-//    cli_error(get_string('patherror', 'local_edximport'));
-//}
+$cliprogress = new cli_progress();
+cli_writeln('Starting import');
+edx_importer::import_from_path($path, $cliprogress, $options['import']);
+cli_writeln("\nImport finished");

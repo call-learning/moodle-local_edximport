@@ -24,8 +24,8 @@
 
 namespace local_edximport\converter\output;
 
-use local_edximport\converter\entity_pool;
-use local_edximport\converter\ref_manager;
+use renderer_base;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,26 +33,25 @@ class completion extends base_output {
     /**
      * Export data for template
      *
-     * @param \renderer_base $output
+     * @param renderer_base $output
      * @return object
      */
-    public function export_for_template(\renderer_base $output) {
+    public function export_for_template(renderer_base $output) {
         global $CFG;
-        require_once($CFG->libdir.'/completionlib.php');
+        require_once($CFG->libdir . '/completionlib.php');
         $coursemodel = $this->modeldata;
-        $completionmodel = new \stdClass();
+        $completionmodel = new stdClass();
         $completionmodel->coursecompletionaggrmethod = [];
-        foreach(
-            array('$@NULL@$',
-                COMPLETION_CRITERIA_TYPE_ACTIVITY,
-                COMPLETION_CRITERIA_TYPE_COURSE,
-                COMPLETION_CRITERIA_TYPE_ROLE) as $index => $aggregmethod) {
+        foreach (['$@NULL@$',
+            COMPLETION_CRITERIA_TYPE_ACTIVITY,
+            COMPLETION_CRITERIA_TYPE_COURSE,
+            COMPLETION_CRITERIA_TYPE_ROLE] as $index => $aggregmethod) {
             $completionmodel->coursecompletionaggrmethod[] = (object) [
-              'id' => $index,
-              'course' => $coursemodel->id,
-              'criteriatype' => $aggregmethod,
-              'method' => COMPLETION_AGGREGATION_ALL,
-              'values' =>   '$@NULL@$'
+                'id' => $index,
+                'course' => $coursemodel->id,
+                'criteriatype' => $aggregmethod,
+                'method' => COMPLETION_AGGREGATION_ALL,
+                'values' => '$@NULL@$'
             ];
         }
         return $completionmodel;

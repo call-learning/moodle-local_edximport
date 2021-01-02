@@ -23,13 +23,17 @@
  */
 
 namespace local_edximport\converter\builder;
+
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\edx\model\base as base_edx_model;
 use local_edximport\edx\model\course as course_model;
+use moodle_exception;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
-class quiz extends module  {
+
+class quiz extends module {
     const MODULE_TYPE = 'quiz';
 
     /**
@@ -39,7 +43,7 @@ class quiz extends module  {
      *
      * @param null $args
      * @return mixed|void
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $models = $this->models;
@@ -61,15 +65,16 @@ class quiz extends module  {
         $quiz->timecreated = $now;
         $quiz->timemodified = $now;
         $quiz->intro = '';
+        $quiz->shuffleanswers = 0; // Shuffle is managed at question level.
         $quiz->introformat = FORMAT_HTML;
         $quiz->question_instances = [];
-
-        // Add questions to module as submodules.
-        $this->build_questions($questions, $quiz);
-        // $this->build_sections($quizmodule);
+        // Add questions to module as submodules and question instances.
+        $questioncategory = $this->build_questions($questions, $quiz);
         // TODO : Here we should not have any global feedback unless there is a description section.
-        // $this->build_feedback($quizmodule).
         $this->helper->entitypool->set_data('quiz', $quiz->id, $quiz);
+
+        $this->helper->entityrefs->add_ref('mod_quiz', $quizid, 'question_category',
+            $questioncategory->id);
 
         $gradecategories = $this->helper->entitypool->get_entities('grade_category');
         // Get the first one.
@@ -85,29 +90,31 @@ class quiz extends module  {
      *
      * @param $questions
      * @param $quizmodule
+     * @return stdClass
      */
     protected function build_questions($questions, &$quizmodule) {
         // Setup a category for this set of questions.
         $questioncategoryid = $this->helper->entitypool->new_entity('question_category');
-        $questioncategory = new \stdClass();
+        $questioncategory = new stdClass();
         $questioncategory->id = $questioncategoryid;
         $questioncategory->name = 'Default for ' . $quizmodule->name;
         $questioncategory->info = 'The default category for questions shared in context ' . $quizmodule->name;
         $questioncategory->infoformat = FORMAT_HTML;
-        $questioncategory->contextid = builder_helper::get_contextid(CONTEXT_MODULE, $quizmodule->id);
+        $questioncategory->contextid = builder_helper::get_contextid(CONTEXT_MODULE, $quizmodule->moduleid);
         $questioncategory->contextlevel = CONTEXT_MODULE;
-        $questioncategory->contextinstanceid = $quizmodule->id;
+        $questioncategory->contextinstanceid = $quizmodule->moduleid;
         $questioncategory->stamp = builder_helper::get_stamp();
-        $questioncategory->parent = 0;
+        $questioncategory->parentid = 0; // Always 0 here as this is a flat category structure.
         $questioncategory->sortorder = 0;
         $questioncategory->idnumber = '$@NULL@$';
         $questioncategory->questions = [];
         foreach ($questions as $index => $edxquestion) {
             $question = question::convert($edxquestion, $this->helper, $quizmodule->id);
             $questioncategory->questions[] = $question->get_entity_data();
-            $questioninstance =         // Add related question instance entity (in the quiz model)
-                question_instance::convert($edxquestion, $this->helper, $questioncategoryid, 0, $index,
-                    $question->get_entity_data()->id);
+            // Add related question instance entity (in the quiz model).
+            $questioninstance = question_instance::convert($edxquestion,
+                $this->helper, $questioncategoryid, 1, $index + 1,
+                $question->get_entity_data()->id);
             $quizmodule->question_instances[] = $questioninstance->get_entity_data();
         }
         $this->helper->entitypool->set_data(

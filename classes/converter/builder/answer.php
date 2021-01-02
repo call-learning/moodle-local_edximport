@@ -23,13 +23,19 @@
  */
 
 namespace local_edximport\converter\builder;
+
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
+use local_edximport\converter\utils;
 use local_edximport\edx\model\base as base_edx_model;
 use local_edximport\edx\model\course as course_model;
+use local_edximport\local\parser_utils;
+use moodle_exception;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
-class answer extends base  {
+
+class answer extends base {
     /**
      * Convert the model and returns a set of object in a pool and set of refs
      *
@@ -37,7 +43,7 @@ class answer extends base  {
      * @param builder_helper $helper
      * @param mixed ...$additionalargs
      * @return mixed the built model (already inserted into the pool)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
         $answer = new answer(
@@ -46,10 +52,11 @@ class answer extends base  {
         );
 
         $answer->data = $answer->build([
-            'quizmoduleid' =>  $additionalargs[0],
+            'quizmoduleid' => $additionalargs[0],
         ]);
         return $answer;
     }
+
     /**
      * Convert a series of static modules into a book
      *
@@ -57,18 +64,18 @@ class answer extends base  {
      *
      * @param null $args
      * @return mixed|void
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $model = $this->models;
         $quizmoduleid = $args['quizmoduleid'];
 
         $answerid = $this->helper->entitypool->new_entity('answer');
-        $answermodel = new \stdClass();
+        $answermodel = new stdClass();
         $answermodel->id = $answerid;
-        $answermodel->text = $model->get_content();
+        $answermodel->answertext = parser_utils::change_html_static_ref(utils::get_raw_content_from_model($model));
         $answermodel->answerformat = FORMAT_HTML;
-        $answermodel->fraction = 0.00000;
+        $answermodel->fraction = $model->correct ? 1.0 : 0.0;
         $answermodel->feedback = '';
         $answermodel->feedbackformat = FORMAT_HTML;
 
@@ -78,7 +85,8 @@ class answer extends base  {
             'answer',
             $answerid,
             builder_helper::get_contextid(CONTEXT_MODULE, $quizmoduleid),
-            $model->get_content(),
+            utils::get_raw_content_from_model($model),
             'question');
+        return $answermodel;
     }
 }

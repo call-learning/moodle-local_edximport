@@ -29,6 +29,13 @@ use local_edximport\edx\model\chapter as edx_chapter;
 use local_edximport\local\parser_utils;
 use XMLReader;
 
+/**
+ * Class chapter
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class chapter extends simple_parser {
     /**
      * Get the filename to parse
@@ -43,7 +50,9 @@ class chapter extends simple_parser {
      * Process a given element.
      *
      * This method can also have side effects on the xmlreader (move to next node for example)
+     *
      * @param $xmlreader
+     * @return bool
      */
     public function process_element(&$xmlreader) {
         if ($xmlreader->nodeType == XMLReader::ELEMENT) { // Opening tags only.

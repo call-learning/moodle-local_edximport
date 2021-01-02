@@ -30,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
 abstract class simple_parser {
-
     /**
      * @var string $archivepath
      */
@@ -86,12 +85,15 @@ abstract class simple_parser {
     /**
      * Parse the original model
      */
-    public function parse() {
+    public function parse(\core\progress\base $progress = null) {
         $xmlreader = new \XMLReader();
         $xmlreader->open($this->archivepath . '/' . $this->get_file_path(),
             LIBXML_NOBLANKS);
         $continue = true;
         while ($continue && $xmlreader->read()) {
+            if ($progress) {
+                $progress->progress();
+            }
             $continue = $this->process_element($xmlreader); // We can also call ::next in this function.
         }
         $xmlreader->close();
@@ -130,10 +132,10 @@ abstract class simple_parser {
      * @param $url
      * @return mixed
      */
-    public static function simple_process_entity($archivepath, $entitytype, $entityid = null) {
+    public static function simple_process_entity($archivepath, $entitytype, $entityid = null, \core\progress\base $progress=null) {
         $parserclass = '\\local_edximport\\parser\\' . $entitytype;
         $pp = new $parserclass($archivepath, $entityid);
-        $pp->parse();
+        $pp->parse($progress);
         return $pp->get_entity();
     }
 

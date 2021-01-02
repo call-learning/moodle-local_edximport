@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,7 +24,20 @@
 
 namespace local_edximport\local;
 
+/**
+ * Class parser_utils
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class parser_utils {
+    /**
+     * Convert to timestamp
+     *
+     * @param $date
+     * @return false|int
+     */
     public static function convert_edx_date_to_ts($date) {
         if (!$date) {
             return 0;
@@ -42,7 +54,7 @@ class parser_utils {
     public static function remove_empty_nodes($node) {
         $doc = new \DOMDocument();
         $doc->appendChild($node);
-        $doc->normalize();;
+        $doc->normalize();
         $xpath = new \DOMXPath($doc);
         $emptynodes = $xpath->query('//*[normalize-space(.) = \'\']');
         foreach ($emptynodes as $node) {
@@ -95,17 +107,19 @@ class parser_utils {
         }
         return false;
     }
+
     /**
      * Change all references in a text
      *
      * @param $staticrefs
+     * @return string|string[]|null
      */
     public static function change_html_static_ref($htmlcontent) {
         $replacer = function($matches) {
-            $filepath =  $matches[1];
-            $parts   = explode('/', $filepath);
+            $filepath = $matches[1];
+            $parts = explode('/', $filepath);
             $encoded = implode('/', array_map('rawurlencode', $parts));
-            return '@@PLUGINFILE@@/'.$encoded;
+            return '@@PLUGINFILE@@/' . $encoded;
         };
         return preg_replace_callback('/"\/static\/([^"]+)"|\'\/static\/([^\']+)\'/', $replacer, $htmlcontent);
     }

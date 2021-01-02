@@ -26,15 +26,17 @@ namespace local_edximport\converter\output;
 
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
+use renderer_base;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
-class inforef extends base_output  {
+class inforef extends base_output {
 
     protected $entityid;
     protected $type;
 
-    public function __construct($modeldata,$type,$entityid) {
+    public function __construct($modeldata, $type, $entityid) {
         parent::__construct($modeldata);
         $this->type = $type;
         $this->entityid = $entityid;
@@ -43,16 +45,16 @@ class inforef extends base_output  {
     /**
      * Export for template
      *
-     * @param \renderer_base $output
-     * @return array|mixed|object|\stdClass|null
+     * @param renderer_base $output
+     * @return array|mixed|object|stdClass|null
      */
-    public function export_for_template(\renderer_base $output) {
-        $entityrefs = $this->modeldata;
+    public function export_for_template(renderer_base $output) {
         /** @var ref_manager $entityrefs */
-        $refdata =  new \stdClass();
-        $refdata->rolerefs =     $entityrefs->get_refs($this->type, $this->entityid, 'role');
-        $refdata->questioncategoryrefs =     $entityrefs->get_refs($this->type, $this->entityid, 'question_category');
-        $refdata->filerefs =     $entityrefs->get_refs($this->type, $this->entityid, 'file');
+        $entityrefs = $this->modeldata;
+        $refdata = new stdClass();
+        $refdata->rolerefs = $entityrefs->get_refs($this->type, $this->entityid, 'role');
+        $refdata->questioncategoryrefs = $entityrefs->get_refs($this->type, $this->entityid, 'question_category');
+        $refdata->filerefs = $entityrefs->get_refs($this->type, $this->entityid, 'file');
         $refdata->hasrolerefs = !empty($refdata->rolerefs);
         $refdata->hasquestioncategoryrefs = !empty($refdata->questioncategoryrefs);
         $refdata->hasfilerefs = !empty($refdata->filerefs);

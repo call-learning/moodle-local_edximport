@@ -26,10 +26,14 @@ namespace local_edximport\converter\output;
 
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
+use renderable;
+use renderer_base;
+use stdClass;
+use templatable;
 
 defined('MOODLE_INTERNAL') || die();
 
-class base_output implements \renderable, \templatable {
+class base_output implements renderable, templatable {
 
     /**
      * @var object $modeldata
@@ -48,10 +52,10 @@ class base_output implements \renderable, \templatable {
     /**
      * Export for template
      *
-     * @param \renderer_base $output
-     * @return array|mixed|object|\stdClass|null
+     * @param renderer_base $output
+     * @return array|mixed|object|stdClass|null
      */
-    public function export_for_template(\renderer_base $output) {
+    public function export_for_template(renderer_base $output) {
         return empty($this->modeldata) ? ((object) array()) : $this->modeldata;
     }
 }

@@ -23,6 +23,7 @@
  */
 
 namespace local_edximport\parser;
+
 use local_edximport\edx\model\vertical as edx_vertical;
 use local_edximport\edx\model\video;
 use XMLReader;
@@ -39,11 +40,15 @@ class vertical extends simple_parser {
     public function get_file_path() {
         return "/vertical/{$this->entityid}.xml";
     }
+
     /**
      * Process a given element.
      *
      * This method can also have side effects on the xmlreader (move to next node for example)
+     *
      * @param XMLReader $xmlreader
+     * @return bool
+     * @throws \moodle_exception
      */
     public function process_element(&$xmlreader) {
         if ($xmlreader->nodeType == XMLReader::ELEMENT) { // Opening tags only.
@@ -57,21 +62,18 @@ class vertical extends simple_parser {
                         'type' => 'html',
                         'url' => $xmlreader->getAttribute('url_name')
                     ];
-                    //$this->entity->add_html($this->simple_process_entity('html', $attrs->url_name));
                     break;
                 case 'discussion':
                     $this->relatedentities[] = (object) [
                         'type' => 'discussion',
                         'url' => $xmlreader->getAttribute('url_name')
                     ];
-                    //$this->entity->add_discussion($this->simple_process_entity('discussion', $attrs->url_name));
                     break;
                 case 'problem':
                     $this->relatedentities[] = (object) [
                         'type' => 'problem',
                         'url' => $xmlreader->getAttribute('url_name')
                     ];
-                    //$this->entity->add_problem($this->simple_process_entity('problem', $attrs->url_name));
                     break;
                 case 'vertical':
                     $this->entity = new edx_vertical($this->entityid, $xmlreader->getAttribute('display_name'));

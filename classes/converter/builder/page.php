@@ -23,16 +23,19 @@
  */
 
 namespace local_edximport\converter\builder;
+
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\converter\utils;
 use local_edximport\edx\model\base as base_edx_model;
+use local_edximport\local\parser_utils;
+use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
-
-class page extends module  {
+class page extends module {
     const MODULE_TYPE = 'page';
+
     /**
      * Convert a series of static modules into a book
      *
@@ -40,7 +43,7 @@ class page extends module  {
      *
      * @param null $args
      * @return mixed|void
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function build($args = null) {
         $model = reset($this->models);
@@ -54,7 +57,7 @@ class page extends module  {
         $page->name = $title;
         $page->intro = '';
         $page->introformat = FORMAT_HTML;
-        $page->content = utils::get_content_for_module($model);;
+        $page->content = parser_utils::change_html_static_ref(utils::get_raw_content_from_model($model));
         $page->contentformat = FORMAT_HTML;
         $page->timemodified = $now;
         $this->helper->entitypool->set_data(static::MODULE_TYPE, $pageid, $page);
@@ -63,7 +66,7 @@ class page extends module  {
             'content',
             0,
             $this->helper->get_contextid(CONTEXT_MODULE, $page->moduleid),
-            $model->get_content(),
+            utils::get_raw_content_from_model($model),
             'mod_' . static::MODULE_TYPE
         );
         $this->module_associate($module, $pageid);

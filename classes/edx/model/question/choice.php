@@ -23,13 +23,20 @@
  */
 
 namespace local_edximport\edx\model\question;
+defined('MOODLE_INTERNAL') || die();
 
 use local_edximport\edx\model\html_content;
-
+/**
+ * Class choice
+ *
+ * @package    local_edximport
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class choice extends \local_edximport\edx\model\base implements html_content {
     protected static $attributeslist = ['correct', 'label'];
 
-    public function __construct() {
+    public function __construct($correct, $label) {
         parent::__construct(
             compact(self::$attributeslist)
         );

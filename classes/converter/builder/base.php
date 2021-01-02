@@ -27,6 +27,7 @@ namespace local_edximport\converter\builder;
 use local_edximport\converter\entity_pool;
 use local_edximport\converter\ref_manager;
 use local_edximport\edx\model\base as base_edx_model;
+use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -59,10 +60,10 @@ abstract class base {
      * @param builder_helper $helper
      * @param mixed ...$additionalargs
      * @return mixed : matching enti
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public static function convert($originalmodels, $helper = null, ...$additionalargs) {
-        throw new \moodle_exception('Not implemented');
+        throw new moodle_exception('Not implemented');
     }
 
     /**
