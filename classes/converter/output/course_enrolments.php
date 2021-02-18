@@ -40,6 +40,6 @@ class course_enrolments extends base_output {
     public function export_for_template(renderer_base $output) {
         $allroles = get_archetype_roles('student');
         $studentrole = reset($allroles);
-        return (object) array('studentroleid' => $studentrole->id);
+        return (object) array('studentidrole' => $studentrole->id);
     }
 }

@@ -40,6 +40,6 @@ class activity_grades extends base_output {
      * @return array|mixed|object|stdClass|null
      */
     public function export_for_template(renderer_base $output) {
-        return (object) array('gradeitems' => $this->modeldata);
+        return (object) array('gradeitems' => array_values($this->modeldata));
     }
 }

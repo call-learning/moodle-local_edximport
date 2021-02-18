@@ -92,7 +92,7 @@ class question extends base {
         $questionmodel->modifiedby = get_admin()->id;
         $questionmodel->idnumber = '$@NULL@$';
 
-        if (builder_helper::is_static_content($model)) {
+        if (builder_helper::is_static_content($model) || empty($model->questions)) {
             $questionmodel->qtype = 'description';
             $questionmodel->maxmark = 0.000;
         } else {
