@@ -35,7 +35,7 @@ use local_edximport\edx\model\html_content;
 class solution extends \local_edximport\edx\model\base implements html_content {
     protected static $attributeslist = ['label'];
 
-    public function __construct() {
+    public function __construct($label) {
         parent::__construct(
             compact(self::$attributeslist)
         );
