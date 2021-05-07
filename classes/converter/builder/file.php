@@ -83,7 +83,7 @@ class file extends base {
         if (!empty($this->helper->edxassetlist->$filename) && !empty($this->helper->edxassetlist->$filename->import_path)) {
             $originalfilepath = '/static/' . $this->helper->edxassetlist->$filename->import_path;
         }
-        $originalfilefullpath = $this->helper->edxfilesdir . '/' . trim($originalfilepath, '/');
+        $originalfilefullpath = trim($this->helper->edxfilesdir . '/' . trim($originalfilepath, '/'));
 
         $contenthash = get_file_storage()::hash_from_path($originalfilefullpath);
         $filesize = filesize($originalfilefullpath);
